@@ -394,24 +394,26 @@ With the foundational 9-step pipeline complete, the system includes a privacy-fi
 
 ### Deployment Architecture (single Vault)
 
-Keep the product simple: **one deployable unit**—the Vault.
+Keep the product simple: **one trust boundary**—the Vault. Do not confuse this with Cloud-Build (no local coding models).
 
-1. **The Vault:** Hosts PostgreSQL, the FastAPI backend, HTMX frontend, and MCP tool surface together (HomeLab/server or local `uvicorn`). No separate workstation GPU / “AI Brain” inference box is part of the architecture.
-2. **Frontier calls (optional):** When the user asks for frontier verification, the Vault posts **sanitized aggregates only** to an external model. Raw ledgers and PII never leave the Vault.
+1. **The Vault:** PostgreSQL, FastAPI, HTMX, MCP, and **local inference used for PII-touching work** (parse / strip / redact before any cloud hop). One place to run; GPU may sit on that same host or a co-located box still inside the Vault trust boundary—not a second product named “AI Brain.”
+2. **Local models (runtime, required for PII path):** Any model that reads raw statement text or row-level PII runs only inside the Vault. Their job is extraction and **PII stripping** so outbound payloads are aggregates/schemas, not raw docs.
+3. **Frontier calls (optional):** When the user asks for frontier verification, the Vault posts **sanitized aggregates only**. Raw ledgers and PII never leave the Vault.
+4. **Development (Cloud-Build):** Cloud agents may write code without a local coding LLM. That does **not** remove Vault-side local models from the privacy pipeline.
 
 ### The "Trust but Verify" Interface
 
 1. **The HTMX Dashboard (Human Interface):**
    - Jinja2 + HTMX served from FastAPI on the Vault.
-   - Upload / analyze / dual-pane ledger views without a separate local-GPU runtime.
+   - Upload / analyze / dual-pane ledger views.
 
 2. **The Tiered MCP Server (AI Interface):**
    The FastAPI backend exposes MCP tools with strict tiering—all tools execute **on the Vault**:
-   - **Tier 1 (Vault-bound):** Tools like `get_raw_transactions()` or `search_statement_text()`. Row-level PII stays on the Vault; these tools are not exposed to cloud frontier callers.
+   - **Tier 1 (Vault-bound):** Tools like `get_raw_transactions()` or `search_statement_text()`. Row-level PII stays on the Vault; cloud frontier callers never invoke these.
    - **Tier 2 (Cloud-safe aggregates):** Tools like `get_monthly_aggregates()` or `verify_portfolio_bridge()`. `SUM()` / `COUNT()` / `GROUP BY` at the SQL layer; frontier models may only consume these outputs.
 
 3. **The Audit Workflow:**
-   - The user asks a question in the HTMX dashboard; the Vault runs Tier 1 / server-side analysis and renders an itemized HTML table.
+   - The user asks a question in the HTMX dashboard; Vault-side analysis (deterministic and/or local-model-assisted strip/parse) renders results.
    - The user clicks **"Verify & Analyze with Frontier Model"**.
    - The frontend posts *sanitized aggregate data* to `/chat/frontier/audit` (or the dashboard frontier-audit route).
    - Middleware guarantees zero-PII egress; the frontier model reasons on anonymous aggregates and HTMX swaps insights into the dashboard.

@@ -8,15 +8,22 @@ It enforces strict financial invariants, closed canonical schemas, and zero-PII 
 
 ```mermaid
 flowchart TD
-  user[User] --> vault[Vault_FastAPI_HTMX_Postgres]
-  vault -->|parse_and_reconcile| vault
+  user[User] --> vault[Vault_app_Postgres]
+  localModel[Local_model_on_Vault] -->|PII_touching_parse_strip| vault
   vault -->|sanitized_aggregates_only| frontier[Optional_Frontier_Model]
   frontier -->|insights_HTMX| vault
 ```
 
-- **Vault:** Owns PDFs, PII, ledgers, dashboard, and MCP tools. One place to run and review.
+Two different “local model” questions — keep them separate:
+
+| Lane | Local models? | Why |
+|------|---------------|-----|
+| **Development (Cloud-Build)** | **No** — cloud agents shape/build code. No `pi-up.sh` / local coding LLM required. | Delivery process only. |
+| **Runtime (Vault / PII pipeline)** | **Yes** — models that see raw statements run **on the Vault** (or same trust boundary). | PII stripping / extraction must not send raw docs to cloud. |
+
+- **Vault:** Owns PDFs, PII, ledgers, dashboard, MCP, and any local inference used for parse/strip.
 - **Frontier (optional):** Sees anonymous aggregates only—never raw statements or amounts in logs.
-- **No AI Brain / workstation GPU** in the product architecture. Cloud-Build agents may implement bets; that is a delivery process, not a second runtime to operate.
+- **Not required:** a separate “AI Brain” workstation as a second product box. Local models are Vault-side runtime, not a parallel deploy to operate.
 
 ## Engineering Rigor
 
