@@ -40,10 +40,11 @@ Any changes made to the codebase must strictly adhere to these invariants:
 ---
 
 
-6. **Strict Separation of Orchestration and Implementation (No Cheating):**
-   - Cloud Agents / Orchestrators are STRICTLY FORBIDDEN from writing application code, implementing features, or authoring tests themselves.
-   - Cloud Agents may ONLY generate architectural plans (`ARCH_PLAN.md`), review Pull Requests, configure CI/CD infrastructure, and trigger the Tier 1 Local Generation Agent (e.g., via `berserker/harness/pi/bin/pi-up.sh`).
-   - Under no circumstances may an Orchestrator bypass the local execution harness to save time. Writing code directly is considered a critical invariant violation and cheating.
+6. **Shape Up planning + Cloud-Build Mode (temporary):**
+   - Active product work is shaped as **pitches** under `docs/specs/` and tracked on the betting table in `ARCH_PLAN.md`. Do not turn raw backlog into undated Phase N checklists in `docs/architecture/`.
+   - **Cloud-Build Mode (active):** Cloud agents **may** shape pitches **and** implement chosen bets (application code, tests, QA scripts, PRs). Local Tier-1 / `pi-up.sh` is **not** required while this mode is active.
+   - When Cloud-Build Mode is explicitly revoked, restore the prior rule: cloud agents plan/review/CI only; Tier-1 local harness implements.
+   - TDD, coverage ≥90%, financial precision, fail-loud contracts, and zero PII/amount logging still gate every bet—Cloud-Build does not relax those invariants.
 
 ## Test-Driven Development (TDD) Mandate
 
@@ -137,19 +138,28 @@ Before a pull request can be merged, the Reviewer Agent verifies:
 
 ---
 
-## Dual-Tier Workflow: Local Generation & Cloud Verification
+## Shape Up + Cloud-Build Workflow (current)
 
-To combine developer velocity with strict cloud validation, ASSASSIN utilizes a Dual-Tier Workflow across local and cloud environments:
+Planning follows Shape Up: raw backlog → shape pitch → PM bets → cloud agent builds within appetite → ship or circuit-break → cool-down. See `ARCH_PLAN.md` and `docs/specs/`.
 
-### 1. Tier 1: Local Generation Agent (e.g., `qwen36-coder`)
-- **Role:** Primary author and implementation agent.
+**Visuals:** For any user-visible surface, produce fat-marker / low-fi wireframes under `docs/specs/visuals/` during **shaping** (before betting). Do not defer first product visuals to mid-build.
+
+**Local models — two lanes:**
+- **Dev (Cloud-Build):** no local coding LLM / `pi-up.sh` required to implement bets.
+- **Runtime (Vault):** local models **are** required for PII-touching parse/strip so raw statements never go to cloud. They live inside the Vault trust boundary—not a separate “AI Brain” product deploy.
+
+### Cloud agent (Shaper / Builder) — Cloud-Build Mode
+- **Role:** Primary author and implementation agent while Cloud-Build Mode is active.
 - **Responsibilities:**
-  - Operates locally to author canonical contracts and comprehensive TDD test suites (Red phase).
-  - Implements contract-compliant business logic (Green phase) and refactors for static AST clarity (Refactor phase).
+  - Keeps `ARCH_PLAN.md` and `docs/specs/` pitches current; does not invent Phase N roadmaps in architecture docs.
+  - Authors TDD suites (Red), implements bet scope (Green), refactors for AST clarity (Refactor).
   - Authors executable QA verification scripts (`scripts/qa_<feature_name>.py`).
   - For browser-visible features, writes Manual UI QA steps in the PR (and a synthetic seed script when the screen needs data).
-  - Executes local pre-flight checks (`uv sync`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest --cov=app --cov-fail-under=90 -v`, `uv run python scripts/agent_review.py`).
+  - Executes pre-flight checks (`uv sync`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest --cov=app --cov-fail-under=90 -v`, `uv run python scripts/agent_review.py`).
   - Commits changes and opens the Pull Request on GitHub.
+
+### Dual-Tier / Tier 1 Local Generation (suspended)
+The prior Dual-Tier path (cloud orchestrator plans only; local `qwen36-coder` / `pi-up.sh` implements) remains documented in runbooks below for when Cloud-Build Mode is revoked. Do not require local harness execution for bets while Cloud-Build Mode is active.
 
 ### Process Execution & Hang Prevention (CRITICAL)
 1. **No Dangling Background Processes:** Never run commands in the background using `&` unless absolutely necessary. If you must start a server or long-running process, you must kill it explicitly before ending your turn.

@@ -46,7 +46,7 @@
     <div class="header">
         <h1>ASSASSIN</h1>
         <span>Financial Intelligence Dashboard</span>
-        <span class="badge">Local Engine</span>
+        <span class="badge">Vault</span>
     </div>
     <div class="container">
         <!-- Pane 1: The AI Analyst -->
@@ -61,7 +61,7 @@
                       hx-target="#pane-vault-body"
                       hx-indicator="#pane-vault-body">
                     <div class="form-group">
-                        <label for="question">Submit a financial question to the local engine</label>
+                        <label for="question">Submit a financial question</label>
                         <textarea id="question" name="question" placeholder="e.g., Show me my total spending by category last month" required></textarea>
                     </div>
                     <button type="submit" id="submit-btn">Analyze</button>
@@ -85,7 +85,7 @@
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Local Execution</span>
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Ledger results</span>
             </div>
             <div class="pane-body" id="pane-vault-body">
                 <div class="empty-state">

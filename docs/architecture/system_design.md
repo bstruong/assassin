@@ -1,10 +1,12 @@
 # ASSASSIN System Design Specification (multi-domain)
 
-**Document type:** architecture and contracts only. No application logic, Alembic revisions, or service objects are produced in this slice.
+**Document type:** architecture and contracts. Authoritative for domain taxonomy, PostgreSQL shape, and reconciliation equations.
+
+**Planning:** Steps 1–9 and Phase 2 below describe the **shipped baseline** (implemented under `app/`, verified by `scripts/qa_step_*.py` and related QA). They are **not** an upcoming delivery checklist. New product work enters via Shape Up pitches in [`docs/specs/`](../specs/) and the betting table in [`ARCH_PLAN.md`](../../ARCH_PLAN.md)—do not append Phase N roadmaps here.
 
 **Invariants that never relax:** all money is **integer cents** (`BIGINT` / Python `int`). Raw geometry and page text are **append-only** and never mixed into canonical money columns. Unrecognized tokens, schema drift, missing mandatory markers, and ambiguous signs **fail the run**. No silent row skip, coerce, or drop.
 
-**As-is:** the repo models a single cash brokerage envelope (`RawStatement` / `CashTransaction` / `TransactionType`) and a two-method `StatementAdapter`. That is the **Investment cash-ledger** subset only. This spec supersedes it for taxonomy, persistence (PostgreSQL), and adapter hierarchy.
+**Baseline (shipped):** multi-domain adapters (depository, revolving credit, custodial brokerage including holdings), PostgreSQL persistence, exclusive registry, combined multi-account path, local ingest API, HTMX dashboard, and tiered MCP. Open ideas belong in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md).
 
 ---
 
@@ -111,7 +113,7 @@ Orchestrator order: **append raw** → exclusive `matches` → `extract` → clo
 
 ## Canonical PostgreSQL Schema Definitions
 
-Design DDL (not an applied migration). All money `BIGINT`. No `DOUBLE PRECISION` / `REAL` / `MONEY` / `NUMERIC` for currency. Bboxes are integers, not floats. Raw payloads are **never updated**.
+Contract DDL for the shipped baseline. Applied schema lives in [`app/db/schema.sql`](../../app/db/schema.sql) (and migrations). All money `BIGINT`. No `DOUBLE PRECISION` / `REAL` / `MONEY` / `NUMERIC` for currency. Bboxes are integers, not floats. Raw payloads are **never updated**.
 
 ```sql
 -- Append-only raw (geometry + text). No monetary interpretation.
@@ -267,7 +269,20 @@ CREATE TABLE transactions (
 - `statements.closing_balance_cents` **equals** depository closing, card `new_balance_cents`, or brokerage `closing_cash_cents`.
 - `raw_payload_id` on `statements` is denormalized for join convenience; it must match `extraction_runs.raw_payload_id` for `run_id`.
 - Re-ingest of the same bytes: **same** `raw_payloads` row, **new** `extraction_runs` (and new canonical statement keyed by `run_id`). Never `UPDATE` raw_pages/raw_tokens.
-- Holdings (brokerage) remain a later table (`holdings`: `quantity_nanos`, `market_value_cents`); not required to start depository/card.
+- Holdings (brokerage) are a **shipped** canonical table (`quantity_nanos`, `market_value_cents` as `BIGINT`; no floats). Required when an investment adapter declares holdings; depository/card statements omit the table.
+
+```sql
+CREATE TABLE holdings (
+  holding_id           UUID PRIMARY KEY,
+  statement_id         UUID NOT NULL REFERENCES statements (statement_id),
+  as_of_date           DATE NOT NULL,
+  symbol               TEXT NOT NULL CHECK (char_length(symbol) >= 1),
+  description          TEXT NOT NULL CHECK (char_length(description) >= 1),
+  quantity_nanos       BIGINT NOT NULL CHECK (quantity_nanos <> 0),
+  market_value_cents   BIGINT NOT NULL,
+  cost_basis_cents     BIGINT
+);
+```
 
 ---
 
@@ -318,14 +333,16 @@ with each term **signed cents** as printed (losses negative). Missing printed te
 
 ## Implementation Sequence and Testing Strategy
 
-### Sequence (dependency order; each slice testable)
+> **Historical / baseline reference.** The sequence below is the dependency order that built the shipped baseline. It is **not** a future backlog. For active bets, see [`ARCH_PLAN.md`](../../ARCH_PLAN.md).
+
+### Sequence (dependency order; each slice testable) — shipped
 
 1. **Contracts freeze** — enums, signed delta rule, exception types, rename in-memory `RawStatement` → canonical vs `RawExtraction`. Python 3.14 / uv / pytest / pdfplumber. Track `tests/fixtures` in git.
 2. **Fail-loud extract core** — raw pages + integer bboxes + closed headers; no domain mapping yet. Tests: extra column, missing marker, ragged row.
 3. **Depository adapter + validators** — checking fixture first, then savings (same domain, different `account_type` / possibly different markers).
 4. **Credit-card adapter + validators** — including due date and bucket identity.
 5. **PostgreSQL persist** — append-only raw + accounts/statements/sidecars/transactions as specified; tests that `UPDATE` of raw is not part of the API and reparse adds `run_id`.
-6. **Investment adapter** — extend existing Schwab cash work to this hierarchy (cash equation + optional portfolio bridge + holdings later).
+6. **Investment adapter** — Schwab (and related) cash hierarchy, optional portfolio bridge, and holdings (`quantity_nanos`, `market_value_cents`).
 7. **Exclusive registry** across domains; overlapping `matches` fails.
 8. **Combined multi-account adapter or explicit fail fixtures** (do not silently support aggregates).
 9. Local ingest API last; no PII egress.
@@ -349,7 +366,7 @@ Do **not** persist canonical before fail-loud extract. Do **not** start FastAPI 
 | `brokerage_cash_happy`                    | investment  | existing cash identity in signed form                             |
 
 
-No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON integers. Optional synthetic PDF later; raw-layer tests assert `x0_mp`/`y0_mp`/`x1_mp`/`y1_mp` as defined in the raw_tokens geometry note.
+No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON integers. Full-page synthetic PDFs (beyond JSON token fixtures) are an unshaped idea in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md). Raw-layer tests assert `x0_mp`/`y0_mp`/`x1_mp`/`y1_mp` as defined in the raw_tokens geometry note.
 
 ### Failure-mode assertions (every adapter)
 
@@ -357,38 +374,46 @@ No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON inte
 
 ---
 
-## Mapping from current code
+## Code alignment (shipped)
 
-- [app/models/canonical.py](app/models/canonical.py) `TransactionType` + unsigned `amount_cents` become signed primary-balance deltas + `transaction_category`.
-- [app/pipeline/validator.py](app/pipeline/validator.py) cash identity remains, restated as `opening + SUM(signed amounts) = closing`, then domain bucket checks.
-- [app/adapters/base.py](app/adapters/base.py) splits into the three abstract subclasses above; Schwab becomes `InvestmentStatementAdapter`.
-- Uncommitted Schwab `continue` on bad rows remains **out of contract** and must not be generalized to bank/card parsers.
+Historical migration notes—these are **done**, not a todo list:
+
+- [app/models/canonical.py](../../app/models/canonical.py) uses signed primary-balance deltas + `transaction_category` (legacy unsigned `TransactionType` paths are not the persistence contract).
+- [app/pipeline/validator.py](../../app/pipeline/validator.py) enforces `opening + SUM(signed amounts) = closing`, then domain bucket checks.
+- [app/adapters/base.py](../../app/adapters/base.py) defines the three abstract subclasses above; Schwab/Vanguard implement `InvestmentStatementAdapter`.
+- Silent `continue` on bad rows is **out of contract** and must not be generalized to bank/card parsers.
 
 
 ---
 
 ## Phase 2: Front-End Architecture & Human-AI Interaction (The Dual-Model HTMX & Tiered MCP Dashboard)
 
-With the foundational 9-step pipeline complete, the system expands to include a privacy-first, dual-model human-AI interface.
+> **Shipped baseline.** Phase 2 describes the privacy-first dual-model interface as implemented (HTMX dashboard, tiered MCP, frontier aggregate audit). Further UI/MCP work must be shaped as a bet in [`ARCH_PLAN.md`](../../ARCH_PLAN.md), not as “Phase 3” appended here.
 
-### Distributed Deployment Architecture
-To maximize both performance and privacy, the architecture supports a split deployment:
-1. **The Vault (HomeLab/Server):** Hosts the `assassin` PostgreSQL database, the FastAPI backend, and the HTMX frontend. This ensures 24/7 uptime and centralized, secure storage of financial ledgers.
-2. **The AI Brain (Workstation/Local GPU):** Hosts the Local LLM (e.g., Ollama running Llama 3 or Gemma 2) on a dedicated GPU (e.g., RTX 3060). The FastAPI backend on the HomeLab communicates with this inference server via the local network (`http://<workstation-ip>:11434`), perfectly offloading the heavy compute.
+With the foundational 9-step pipeline complete, the system includes a privacy-first, dual-model human-AI interface.
 
-### The "Trust but Verify" Dual-Model Interface
+### Deployment Architecture (single Vault)
+
+Keep the product simple: **one trust boundary**—the Vault. Do not confuse this with Cloud-Build (no local coding models).
+
+1. **The Vault:** PostgreSQL, FastAPI, HTMX, MCP, and **local inference used for PII-touching work** (parse / strip / redact before any cloud hop). One place to run; GPU may sit on that same host or a co-located box still inside the Vault trust boundary—not a second product named “AI Brain.”
+2. **Local models (runtime, required for PII path):** Any model that reads raw statement text or row-level PII runs only inside the Vault. Their job is extraction and **PII stripping** so outbound payloads are aggregates/schemas, not raw docs.
+3. **Frontier calls (optional):** When the user asks for frontier verification, the Vault posts **sanitized aggregates only**. Raw ledgers and PII never leave the Vault.
+4. **Development (Cloud-Build):** Cloud agents may write code without a local coding LLM. That does **not** remove Vault-side local models from the privacy pipeline.
+
+### The "Trust but Verify" Interface
 
 1. **The HTMX Dashboard (Human Interface):**
-   - Built with Jinja2 templates and HTMX served directly from the FastAPI application.
-   - Provides a zero-JS framework for drag-and-drop PDF uploads (`hx-post`), live extraction status updates, and dual-pane ledger views.
+   - Jinja2 + HTMX served from FastAPI on the Vault.
+   - Upload / analyze / dual-pane ledger views.
 
 2. **The Tiered MCP Server (AI Interface):**
-   The FastAPI backend acts as a Model Context Protocol (MCP) server, exposing tools with strict tiering:
-   - **Tier 1 (Local-Only):** Tools like `get_raw_transactions()` or `search_statement_text()`. Only the local, air-gapped LLM is authorized to invoke these tools and view row-level PII data.
-   - **Tier 2 (Cloud-Safe):** Tools like `get_monthly_aggregates()` or `verify_portfolio_bridge()`. These tools execute `SUM()`, `COUNT()`, and `GROUP BY` logic at the SQL layer, ensuring zero PII egress. Cloud-based frontier models (e.g., Gemini Pro) are restricted to these tools.
+   The FastAPI backend exposes MCP tools with strict tiering—all tools execute **on the Vault**:
+   - **Tier 1 (Vault-bound):** Tools like `get_raw_transactions()` or `search_statement_text()`. Row-level PII stays on the Vault; cloud frontier callers never invoke these.
+   - **Tier 2 (Cloud-safe aggregates):** Tools like `get_monthly_aggregates()` or `verify_portfolio_bridge()`. `SUM()` / `COUNT()` / `GROUP BY` at the SQL layer; frontier models may only consume these outputs.
 
 3. **The Audit Workflow:**
-   - The user queries their finances in the HTMX dashboard. The **Local LLM** invokes Tier 1 tools to fetch raw ledgers and displays an itemized HTML table.
-   - The user clicks **"Verify & Analyze with Frontier Model"**. 
-   - The HTMX frontend posts the *sanitized aggregate data* to a dedicated FastAPI route (`/chat/frontier/audit`). 
-   - A middleware guarantees zero-PII egress, and the **Frontier LLM** performs deep reasoning, trend analysis, and mathematical verification on the anonymous aggregates, swapping its insights into the dashboard via HTMX.
+   - The user asks a question in the HTMX dashboard; Vault-side analysis (deterministic and/or local-model-assisted strip/parse) renders results.
+   - The user clicks **"Verify & Analyze with Frontier Model"**.
+   - The frontend posts *sanitized aggregate data* to `/chat/frontier/audit` (or the dashboard frontier-audit route).
+   - Middleware guarantees zero-PII egress; the frontier model reasons on anonymous aggregates and HTMX swaps insights into the dashboard.
