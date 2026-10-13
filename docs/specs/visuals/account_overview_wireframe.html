@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASSASSIN — Account overview home (proposed)</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #222;
+      --paper: #e8eef2;
+      --panel: #fff;
+      --accent: #1a3a5c;
+      --err: #6b1d1d;
+      --ok: #1a4d2e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 3px solid var(--line);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    header p {
+      margin: 0.4rem 0 0;
+      color: var(--mute);
+      font-size: 0.85rem;
+      max-width: 48rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--mute);
+    }
+    .meta span {
+      border: 1px dashed var(--mute);
+      padding: 0.15rem 0.5rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      min-height: calc(100vh - 9rem);
+      border-bottom: 3px solid var(--line);
+    }
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .pane {
+      background: var(--panel);
+      border-right: 2px solid var(--line);
+      padding: 1rem 1.25rem 1.5rem;
+      min-height: 22rem;
+    }
+    .pane:last-child { border-right: none; }
+    .pane h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+    .box {
+      border: 2px solid var(--line);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .box label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--mute);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+    }
+    .ghost { color: var(--mute); font-size: 0.8rem; }
+    .btn {
+      display: inline-block;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      background: transparent;
+      cursor: default;
+    }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .btn.linkish { border-style: dashed; font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+    .callout {
+      border: 2px solid var(--ok);
+      background: #f4faf6;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 0.35rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.4rem 0.45rem;
+      text-align: left;
+    }
+    th { background: #eee; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .totals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .totals strong { display: block; font-size: 0.7rem; color: var(--mute); text-transform: uppercase; }
+    .drill {
+      border: 2px dashed var(--mute);
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      background: #fafafa;
+    }
+    .drill h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    footer {
+      padding: 1rem 1.5rem 2rem;
+      font-size: 0.8rem;
+      color: var(--mute);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ASSASSIN · Account overview home (proposed)</h1>
+    <p>
+      YNAB-useful personal Vault: on load, Pane 2 shows high-level account metrics from
+      Postgres. Transactions are a secondary drill-in — not the default home.
+    </p>
+    <div class="meta">
+      <span>Phase: Shaping / proposed</span>
+      <span>Bet: account-overview-home</span>
+      <span>Data: SYNTHETIC · integer cents</span>
+      <span>Baseline: statements-in-browser ledger</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="pane" aria-label="Upload and actions">
+      <h2>1 · Upload &amp; actions</h2>
+      <div class="box">
+        <label>Statement PDF (unchanged)</label>
+        <p class="ghost">Choose file… SYNTHETIC_chase.pdf</p>
+        <span class="btn primary">Upload to Vault</span>
+      </div>
+      <div class="box">
+        <label>Frontier verify (unchanged)</label>
+        <p class="ghost">Optional aggregates — not the home overview.</p>
+        <span class="btn">Verify with Frontier</span>
+      </div>
+      <p class="ghost">Upload still feeds Vault; home does not wait for a click to show balances.</p>
+    </section>
+
+    <section class="pane" aria-label="Account overview">
+      <h2>2 · Account overview (on load)</h2>
+      <div class="callout">
+        Prepopulated from DB when statements exist. No “Show latest ledger” required.
+      </div>
+      <div class="box">
+        <label>Portfolio snapshot</label>
+        <div class="totals">
+          <div>
+            <strong>Accounts</strong>
+            2
+          </div>
+          <div>
+            <strong>Total closing (cents)</strong>
+            482350
+          </div>
+        </div>
+      </div>
+      <div class="box">
+        <label>Accounts (high-level only)</label>
+        <table>
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Type</th>
+              <th>Mask</th>
+              <th>Period</th>
+              <th class="num">Opening</th>
+              <th class="num">Closing</th>
+              <th class="num">Net</th>
+              <th>Txns</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Chase</td>
+              <td>checking</td>
+              <td>*0000</td>
+              <td>2024-01-01 → 01-31</td>
+              <td class="num">100000</td>
+              <td class="num">132500</td>
+              <td class="num">32500</td>
+              <td>12</td>
+              <td><span class="btn linkish">Details</span></td>
+            </tr>
+            <tr>
+              <td>Schwab</td>
+              <td>brokerage</td>
+              <td>*0000</td>
+              <td>2024-01-01 → 01-31</td>
+              <td class="num">340000</td>
+              <td class="num">349850</td>
+              <td class="num">9850</td>
+              <td>4</td>
+              <td><span class="btn linkish">Details</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="ghost" style="margin-top:0.6rem;">
+          Templated from Postgres. Amounts are integer cents. No generative HTML.
+        </p>
+      </div>
+      <div class="drill">
+        <h3>Secondary · transaction drill-in (after Details)</h3>
+        <p class="ghost">Chase · *0000 — only after explicit selection</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="num">Amount (cents)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2024-01-05</td>
+              <td>deposit</td>
+              <td>SYNTHETIC PAYROLL</td>
+              <td class="num">250000</td>
+            </tr>
+            <tr>
+              <td>2024-01-12</td>
+              <td>withdrawal</td>
+              <td>SYNTHETIC RENT</td>
+              <td class="num">-180000</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="ghost" style="margin-top:0.5rem;">
+          Empty DB: overview empty state (“Upload a statement”) — not fake zeros.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Done-when for PM:</strong> refresh dashboard with seeded data → overview appears immediately;
+    Details → transactions; empty DB → empty state; unknown statement drill-in fails loud.
+  </footer>
+</body>
+</html>

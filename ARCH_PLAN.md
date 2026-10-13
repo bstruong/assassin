@@ -36,8 +36,8 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Cycle id** | `cycle-2026-w42` |
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
-| **In-bet pitches** | [Statements in the browser](docs/specs/pitch_statements_in_browser.md) |
-| **Hill status** | Downhill — upload + DB ledger shipped in-branch; Chase adapter + Schwab fixture path green |
+| **In-bet pitches** | [Account overview home](docs/specs/pitch_account_overview.md) |
+| **Hill status** | Uphill — overview on load + transaction drill-in |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
 
@@ -49,7 +49,7 @@ Shaped candidates for the **next** bet. Listing here is **not** a commitment.
 
 | Pitch | Appetite | Summary | Status |
 |-------|----------|---------|--------|
-| [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — deferred (not on critical path to personal statements UI) |
+| [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — deferred (not on critical path to personal Vault home) |
 
 Unshaped one-liners live in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md).
 
@@ -68,6 +68,7 @@ Do not re-queue these as roadmap items.
 | App-side telemetry helpers + QA scripts | Shipped (full Watchtower stack remains a separate pitch) |
 | Spec & design truthfulness (`system_design.md` shipped vs raw framing + `qa_design_truthfulness.py`) | Shipped |
 | Single Vault (drop AI Brain / workstation GPU) + shaping-phase wireframe requirement | Shipped |
+| Statements in the browser (Chase + Schwab upload → templated DB ledger) | Shipped — [#49](https://github.com/bstruong/assassin/pull/49) |
 
 ---
 
