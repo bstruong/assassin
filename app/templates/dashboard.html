@@ -19,11 +19,14 @@
         .pane-body { flex: 1; padding: 16px; overflow-y: auto; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #8b949e; }
-        textarea { width: 100%; min-height: 120px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; color: #c9d1d9; font-family: inherit; font-size: 0.9rem; resize: vertical; }
+        input[type="file"] { width: 100%; color: #c9d1d9; font-size: 0.85rem; }
+        textarea { width: 100%; min-height: 80px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; color: #c9d1d9; font-family: inherit; font-size: 0.9rem; resize: vertical; }
         textarea:focus { outline: none; border-color: #58a6ff; }
         button { background: #238636; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
         button:hover { background: #2ea043; }
         button:disabled { background: #30363d; cursor: not-allowed; }
+        button.secondary { background: #21262d; border: 1px solid #30363d; }
+        button.secondary:hover { background: #30363d; }
         .analysis-result { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px; margin-top: 12px; }
         .analysis-result h3 { color: #58a6ff; margin-bottom: 8px; font-size: 1rem; }
         .analysis-result p { color: #8b949e; font-size: 0.85rem; margin-bottom: 8px; }
@@ -40,6 +43,7 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
         .empty-state p { font-size: 0.9rem; }
         .loading { color: #58a6ff; font-style: italic; }
+        input[type="text"] { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; color: #c9d1d9; }
     </style>
 </head>
 <body>
@@ -49,22 +53,34 @@
         <span class="badge">Vault</span>
     </div>
     <div class="container">
-        <!-- Pane 1: The AI Analyst -->
         <div class="pane" id="pane-analyst">
             <div class="pane-header">
-                <span class="icon">&#9889;</span>The AI Analyst
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Frontier Generation</span>
+                <span class="icon">&#9889;</span>Upload &amp; actions
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Chase · Schwab</span>
             </div>
             <div class="pane-body">
-                <form hx-post="/api/v1/dashboard/analyze"
+                <form id="upload-form"
+                      hx-post="/api/v1/dashboard/upload"
+                      hx-encoding="multipart/form-data"
                       hx-swap="innerHTML"
                       hx-target="#pane-vault-body"
                       hx-indicator="#pane-vault-body">
                     <div class="form-group">
-                        <label for="question">Submit a financial question</label>
-                        <textarea id="question" name="question" placeholder="e.g., Show me my total spending by category last month" required></textarea>
+                        <label for="statement-file">Statement PDF</label>
+                        <input type="file" id="statement-file" name="file" accept="application/pdf,.pdf" required>
                     </div>
-                    <button type="submit" id="submit-btn">Analyze</button>
+                    <button type="submit" id="upload-btn">Upload to Vault</button>
+                </form>
+                <form hx-post="/api/v1/dashboard/analyze"
+                      hx-swap="innerHTML"
+                      hx-target="#pane-vault-body"
+                      hx-indicator="#pane-vault-body"
+                      style="margin-top:16px;">
+                    <div class="form-group">
+                        <label for="question">Refresh latest ledger</label>
+                        <textarea id="question" name="question" placeholder="Optional note (required field for refresh)" required>Show latest Vault ledger</textarea>
+                    </div>
+                    <button type="submit" id="submit-btn" class="secondary">Show latest ledger</button>
                 </form>
                 <form id="frontier-audit-form"
                       hx-post="/api/v1/dashboard/frontier-audit"
@@ -76,12 +92,11 @@
                         <input type="text" id="frontier-group-by" name="group_by"
                                value="transaction_category" required>
                     </div>
-                    <button type="submit" id="frontier-verify-btn">Verify &amp; Analyze with Frontier Model</button>
+                    <button type="submit" id="frontier-verify-btn" class="secondary">Verify &amp; Analyze with Frontier Model</button>
                 </form>
                 <div id="frontier-result"></div>
             </div>
         </div>
-        <!-- Pane 2: The Local Vault -->
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
@@ -90,7 +105,7 @@
             <div class="pane-body" id="pane-vault-body">
                 <div class="empty-state">
                     <div class="icon">&#128202;</div>
-                    <p>Submit a question to begin analysis</p>
+                    <p>Upload a Chase or Schwab PDF to begin</p>
                 </div>
             </div>
         </div>
@@ -98,14 +113,17 @@
     <script>
         document.body.addEventListener("htmx:beforeSwap", function (event) {
             var xhr = event.detail.xhr;
-            if (!xhr || xhr.status !== 400 || !xhr.responseURL) {
+            if (!xhr || !xhr.responseURL) {
                 return;
             }
-            if (xhr.responseURL.indexOf("/api/v1/dashboard/frontier-audit") === -1) {
-                return;
+            var url = xhr.responseURL;
+            var isFrontier = url.indexOf("/api/v1/dashboard/frontier-audit") !== -1;
+            var isUpload = url.indexOf("/api/v1/dashboard/upload") !== -1;
+            var isAnalyze = url.indexOf("/api/v1/dashboard/analyze") !== -1;
+            if ((isFrontier || isUpload || isAnalyze) && xhr.status === 400) {
+                event.detail.shouldSwap = true;
+                event.detail.isError = false;
             }
-            event.detail.shouldSwap = true;
-            event.detail.isError = false;
         });
     </script>
 </body>

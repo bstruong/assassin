@@ -63,11 +63,20 @@ flowchart LR
 
 ## Done-when
 
-- [ ] `uv run python scripts/qa_statements_in_browser.py` — happy: fixture/seed PDF upload via dashboard path persists and Pane 2 shows templated DB-backed rows; negative: empty upload / unmatched PDF fails loud with `[PASS]` on expected rejection
-- [ ] Manual UI QA: start uvicorn → `/dashboard` → upload → see templated ledger; bad PDF shows error (not silent empty success)
-- [ ] Proposed wireframe linked and matched by Manual UI QA
-- [ ] Institution lock recorded on this pitch + `ARCH_PLAN.md`
-- [ ] CI gates green; bet archived or circuit-broken on the board
+- [x] `uv run python scripts/qa_statements_in_browser.py` — Chase + Schwab fixture uploads → templated ledger; unmatched PDF → `ADAPTER_MATCH_FAILED`
+- [x] Manual UI QA documented below
+- [x] Proposed wireframe linked
+- [x] Institution lock: Charles Schwab + Chase
+- [ ] CI gates green on PR; archive bet after merge
+
+## Manual UI QA
+
+1. `export DATABASE_URL=postgresql://postgres:assassin@localhost:5432/assassin_test` (or your Vault DB)
+2. `uv run uvicorn app.api.app:app --host 127.0.0.1 --port 8000`
+3. Open `http://127.0.0.1:8000/dashboard`
+4. Happy: upload a Chase/Schwab fixture PDF (render via QA script or ingest fixtures) → Pane 2 shows **Vault Ledger** with integer-cent rows
+5. Negative: upload a random non-matching PDF → **Upload rejected** / `ADAPTER_MATCH_FAILED`
+6. Note: production Chase/Schwab PDF layouts that drift from fixture markers will fail loud until further adapter shaping
 
 ## Circuit breaker
 

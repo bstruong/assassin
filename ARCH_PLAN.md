@@ -37,7 +37,7 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
 | **In-bet pitches** | [Statements in the browser](docs/specs/pitch_statements_in_browser.md) |
-| **Hill status** | Downhill — Schwab + Chase locked; upload + DB-templated Pane 2 + adapters |
+| **Hill status** | Downhill — upload + DB ledger shipped in-branch; Chase adapter + Schwab fixture path green |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
 
