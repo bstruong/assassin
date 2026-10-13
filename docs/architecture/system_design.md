@@ -1,10 +1,12 @@
 # ASSASSIN System Design Specification (multi-domain)
 
-**Document type:** architecture and contracts only. No application logic, Alembic revisions, or service objects are produced in this slice.
+**Document type:** architecture and contracts. Authoritative for domain taxonomy, PostgreSQL shape, and reconciliation equations.
+
+**Planning:** Steps 1–9 and Phase 2 below describe the **shipped baseline** (implemented under `app/`, verified by `scripts/qa_step_*.py` and related QA). They are **not** an upcoming delivery checklist. New product work enters via Shape Up pitches in [`docs/specs/`](../specs/) and the betting table in [`ARCH_PLAN.md`](../../ARCH_PLAN.md)—do not append Phase N roadmaps here.
 
 **Invariants that never relax:** all money is **integer cents** (`BIGINT` / Python `int`). Raw geometry and page text are **append-only** and never mixed into canonical money columns. Unrecognized tokens, schema drift, missing mandatory markers, and ambiguous signs **fail the run**. No silent row skip, coerce, or drop.
 
-**As-is:** the repo models a single cash brokerage envelope (`RawStatement` / `CashTransaction` / `TransactionType`) and a two-method `StatementAdapter`. That is the **Investment cash-ledger** subset only. This spec supersedes it for taxonomy, persistence (PostgreSQL), and adapter hierarchy.
+**Baseline (shipped):** multi-domain adapters (depository, revolving credit, custodial brokerage including holdings), PostgreSQL persistence, exclusive registry, combined multi-account path, local ingest API, HTMX dashboard, and tiered MCP. Older “investment cash-only / holdings later” wording is historical migration context, not current scope. Open ideas belong in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md).
 
 ---
 
@@ -318,14 +320,16 @@ with each term **signed cents** as printed (losses negative). Missing printed te
 
 ## Implementation Sequence and Testing Strategy
 
-### Sequence (dependency order; each slice testable)
+> **Historical / baseline reference.** The sequence below is the dependency order that built the shipped baseline. It is **not** a future backlog. For active bets, see [`ARCH_PLAN.md`](../../ARCH_PLAN.md).
+
+### Sequence (dependency order; each slice testable) — shipped
 
 1. **Contracts freeze** — enums, signed delta rule, exception types, rename in-memory `RawStatement` → canonical vs `RawExtraction`. Python 3.14 / uv / pytest / pdfplumber. Track `tests/fixtures` in git.
 2. **Fail-loud extract core** — raw pages + integer bboxes + closed headers; no domain mapping yet. Tests: extra column, missing marker, ragged row.
 3. **Depository adapter + validators** — checking fixture first, then savings (same domain, different `account_type` / possibly different markers).
 4. **Credit-card adapter + validators** — including due date and bucket identity.
 5. **PostgreSQL persist** — append-only raw + accounts/statements/sidecars/transactions as specified; tests that `UPDATE` of raw is not part of the API and reparse adds `run_id`.
-6. **Investment adapter** — extend existing Schwab cash work to this hierarchy (cash equation + optional portfolio bridge + holdings later).
+6. **Investment adapter** — Schwab (and related) cash hierarchy, optional portfolio bridge, and holdings (`quantity_nanos`, `market_value_cents`).
 7. **Exclusive registry** across domains; overlapping `matches` fails.
 8. **Combined multi-account adapter or explicit fail fixtures** (do not silently support aggregates).
 9. Local ingest API last; no PII egress.
@@ -369,7 +373,9 @@ No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON inte
 
 ## Phase 2: Front-End Architecture & Human-AI Interaction (The Dual-Model HTMX & Tiered MCP Dashboard)
 
-With the foundational 9-step pipeline complete, the system expands to include a privacy-first, dual-model human-AI interface.
+> **Shipped baseline.** Phase 2 describes the privacy-first dual-model interface as implemented (HTMX dashboard, tiered MCP, frontier aggregate audit). Further UI/MCP work must be shaped as a bet in [`ARCH_PLAN.md`](../../ARCH_PLAN.md), not as “Phase 3” appended here.
+
+With the foundational 9-step pipeline complete, the system includes a privacy-first, dual-model human-AI interface.
 
 ### Distributed Deployment Architecture
 To maximize both performance and privacy, the architecture supports a split deployment:
