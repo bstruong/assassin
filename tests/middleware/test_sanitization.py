@@ -71,6 +71,21 @@ class TestRedactText:
         assert "5000.00" not in result
         assert "[REDACTED_AMOUNT]" in result
 
+    def test_fee_keyword_still_redacts_amounts(self):
+        text = "fee: 12.34"
+        result = _redact_text(text)
+        assert "12.34" not in result
+        assert "[REDACTED_AMOUNT]" in result
+
+    def test_uuid_with_fee_hex_not_corrupted(self):
+        """Hex substring ``fee`` inside a UUID must not trigger money redaction."""
+        uuid = "8fee1234-5678-4abc-8def-0123456789ab"
+        assert _redact_text(uuid) == uuid
+
+    def test_uuid_without_hyphens_preserved(self):
+        uuid = "8fee123456784abc8def0123456789ab"
+        assert _redact_text(uuid) == uuid
+
     def test_no_pii_unchanged(self):
         text = "Hello world, this is a clean message."
         result = _redact_text(text)
@@ -147,6 +162,18 @@ class TestRedactValue:
         data = {"account_mask": "*1234"}
         result = _redact_value(data, scrub_row_pii=False)
         assert result["account_mask"] == "*1234"
+
+    def test_run_id_uuid_with_fee_hex_preserved(self):
+        """Correlation IDs must pass through even when hex contains ``fee``."""
+        run_id = "8fee1234-5678-4abc-8def-0123456789ab"
+        result = _redact_value({"run_id": run_id, "amount": "99.00"})
+        assert result["run_id"] == run_id
+        assert result["amount"] == "[REDACTED_AMOUNT]"
+
+    def test_statement_id_key_passthrough(self):
+        statement_id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        result = _redact_value({"statement_id": statement_id})
+        assert result["statement_id"] == statement_id
 
 
 class TestFrontierPathDetection:
