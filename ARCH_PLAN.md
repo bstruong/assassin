@@ -34,7 +34,7 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Cycle id** | `cycle-2026-w42` |
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
-| **In-bet pitches** | _None — awaiting PM bet_ |
+| **In-bet pitches** | _None — awaiting next PM bet_ |
 | **Hill status** | _n/a_ |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
@@ -48,7 +48,6 @@ Shaped candidates for the **next** bet. Listing here is **not** a commitment.
 | Pitch | Appetite | Summary | Status |
 |-------|----------|---------|--------|
 | [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — ready to bet |
-| [Spec & design truthfulness](docs/specs/pitch_design_truthfulness.md) | Small Batch / cool-down | Align `system_design.md` wording with shipped baseline vs raw ideas | Shaped — ready to bet |
 
 Unshaped one-liners live in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md).
 
@@ -65,6 +64,7 @@ Do not re-queue these as roadmap items.
 | Local HTMX asset + AGENTS frontend SRI ban + Playwright dashboard E2E | Shipped |
 | Holdings (`quantity_nanos` / `market_value_cents`), Vanguard adapter, portfolio bridge | Shipped |
 | App-side telemetry helpers + QA scripts | Shipped (full Watchtower stack remains a separate pitch) |
+| Spec & design truthfulness (`system_design.md` shipped vs raw framing + `qa_design_truthfulness.py`) | Shipped |
 
 ---
 
@@ -72,9 +72,9 @@ Do not re-queue these as roadmap items.
 
 Unshaped chores only—not new features. Pick up between cycles.
 
-- Doc drift: `system_design.md` “as-is / holdings later” phrasing vs code (see design-truthfulness pitch if shaped).
 - CI nits that do not change product surface.
 - Mutation nightly / coverage hygiene with no new capability.
+- Deep copy-edit of remaining historical paragraphs in architecture docs (optional polish; not a feature).
 
 ---
 

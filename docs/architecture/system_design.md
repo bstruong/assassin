@@ -6,7 +6,7 @@
 
 **Invariants that never relax:** all money is **integer cents** (`BIGINT` / Python `int`). Raw geometry and page text are **append-only** and never mixed into canonical money columns. Unrecognized tokens, schema drift, missing mandatory markers, and ambiguous signs **fail the run**. No silent row skip, coerce, or drop.
 
-**Baseline (shipped):** multi-domain adapters (depository, revolving credit, custodial brokerage including holdings), PostgreSQL persistence, exclusive registry, combined multi-account path, local ingest API, HTMX dashboard, and tiered MCP. Older “investment cash-only / holdings later” wording is historical migration context, not current scope. Open ideas belong in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md).
+**Baseline (shipped):** multi-domain adapters (depository, revolving credit, custodial brokerage including holdings), PostgreSQL persistence, exclusive registry, combined multi-account path, local ingest API, HTMX dashboard, and tiered MCP. Open ideas belong in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md).
 
 ---
 
@@ -113,7 +113,7 @@ Orchestrator order: **append raw** → exclusive `matches` → `extract` → clo
 
 ## Canonical PostgreSQL Schema Definitions
 
-Design DDL (not an applied migration). All money `BIGINT`. No `DOUBLE PRECISION` / `REAL` / `MONEY` / `NUMERIC` for currency. Bboxes are integers, not floats. Raw payloads are **never updated**.
+Contract DDL for the shipped baseline. Applied schema lives in [`app/db/schema.sql`](../../app/db/schema.sql) (and migrations). All money `BIGINT`. No `DOUBLE PRECISION` / `REAL` / `MONEY` / `NUMERIC` for currency. Bboxes are integers, not floats. Raw payloads are **never updated**.
 
 ```sql
 -- Append-only raw (geometry + text). No monetary interpretation.
@@ -269,7 +269,20 @@ CREATE TABLE transactions (
 - `statements.closing_balance_cents` **equals** depository closing, card `new_balance_cents`, or brokerage `closing_cash_cents`.
 - `raw_payload_id` on `statements` is denormalized for join convenience; it must match `extraction_runs.raw_payload_id` for `run_id`.
 - Re-ingest of the same bytes: **same** `raw_payloads` row, **new** `extraction_runs` (and new canonical statement keyed by `run_id`). Never `UPDATE` raw_pages/raw_tokens.
-- Holdings (brokerage) remain a later table (`holdings`: `quantity_nanos`, `market_value_cents`); not required to start depository/card.
+- Holdings (brokerage) are a **shipped** canonical table (`quantity_nanos`, `market_value_cents` as `BIGINT`; no floats). Required when an investment adapter declares holdings; depository/card statements omit the table.
+
+```sql
+CREATE TABLE holdings (
+  holding_id           UUID PRIMARY KEY,
+  statement_id         UUID NOT NULL REFERENCES statements (statement_id),
+  as_of_date           DATE NOT NULL,
+  symbol               TEXT NOT NULL CHECK (char_length(symbol) >= 1),
+  description          TEXT NOT NULL CHECK (char_length(description) >= 1),
+  quantity_nanos       BIGINT NOT NULL CHECK (quantity_nanos <> 0),
+  market_value_cents   BIGINT NOT NULL,
+  cost_basis_cents     BIGINT
+);
+```
 
 ---
 
@@ -353,7 +366,7 @@ Do **not** persist canonical before fail-loud extract. Do **not** start FastAPI 
 | `brokerage_cash_happy`                    | investment  | existing cash identity in signed form                             |
 
 
-No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON integers. Optional synthetic PDF later; raw-layer tests assert `x0_mp`/`y0_mp`/`x1_mp`/`y1_mp` as defined in the raw_tokens geometry note.
+No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON integers. Full-page synthetic PDFs (beyond JSON token fixtures) are an unshaped idea in [`docs/specs/raw_backlog.md`](../specs/raw_backlog.md). Raw-layer tests assert `x0_mp`/`y0_mp`/`x1_mp`/`y1_mp` as defined in the raw_tokens geometry note.
 
 ### Failure-mode assertions (every adapter)
 
@@ -361,12 +374,14 @@ No real customer PDFs. Cell strings in fixtures; expected `*_cents` as JSON inte
 
 ---
 
-## Mapping from current code
+## Code alignment (shipped)
 
-- [app/models/canonical.py](app/models/canonical.py) `TransactionType` + unsigned `amount_cents` become signed primary-balance deltas + `transaction_category`.
-- [app/pipeline/validator.py](app/pipeline/validator.py) cash identity remains, restated as `opening + SUM(signed amounts) = closing`, then domain bucket checks.
-- [app/adapters/base.py](app/adapters/base.py) splits into the three abstract subclasses above; Schwab becomes `InvestmentStatementAdapter`.
-- Uncommitted Schwab `continue` on bad rows remains **out of contract** and must not be generalized to bank/card parsers.
+Historical migration notes—these are **done**, not a todo list:
+
+- [app/models/canonical.py](../../app/models/canonical.py) uses signed primary-balance deltas + `transaction_category` (legacy unsigned `TransactionType` paths are not the persistence contract).
+- [app/pipeline/validator.py](../../app/pipeline/validator.py) enforces `opening + SUM(signed amounts) = closing`, then domain bucket checks.
+- [app/adapters/base.py](../../app/adapters/base.py) defines the three abstract subclasses above; Schwab/Vanguard implement `InvestmentStatementAdapter`.
+- Silent `continue` on bad rows is **out of contract** and must not be generalized to bank/card parsers.
 
 
 ---

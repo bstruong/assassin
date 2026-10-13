@@ -1,6 +1,6 @@
 # Pitch: Spec & design truthfulness
 
-**Status:** Shaped  
+**Status:** Shipped  
 **Builder:** Cloud agent (Cloud-Build Mode)  
 **Bettor:** Human PM  
 **Appetite:** Small Batch (cool-down friendly; ≤2 weeks)
@@ -36,12 +36,16 @@
 
 ## Done-when
 
-- [ ] `system_design.md` preamble and sequence/Phase sections no longer present completed work as upcoming delivery
-- [ ] Active planning pointed to `ARCH_PLAN.md` + `docs/specs/`
-- [ ] Manual UI QA: not applicable (no user-visible UI)
-- [ ] Optional: `scripts/qa_design_truthfulness.py` that greps for banned stale phrases (`holdings later`, “as-is” investment-only as current state) and prints `[PASS]` / `[FAIL]`
-- [ ] `ARCH_PLAN.md` archive/cool-down updated
+- [x] `system_design.md` preamble and sequence/Phase sections no longer present completed work as upcoming delivery
+- [x] Active planning pointed to `ARCH_PLAN.md` + `docs/specs/`
+- [x] Manual UI QA: not applicable (no user-visible UI)
+- [x] `scripts/qa_design_truthfulness.py` greps for banned stale phrases and prints `[PASS]` / `[FAIL]`
+- [x] `ARCH_PLAN.md` archive/cool-down updated
 
 ## Circuit breaker
 
 Ship the preamble + sequence/Phase annotations even if every historical paragraph is not rewritten. Deep copy-edits return to cool-down.
+
+## Outcome
+
+Shipped in Cloud-Build Mode: holdings DDL documented as baseline, mapping section reframed as shipped alignment, banned future-framing phrases removed, QA script added.
