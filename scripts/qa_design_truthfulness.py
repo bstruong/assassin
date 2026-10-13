@@ -8,7 +8,6 @@ Negative path: banned stale phrases that present completed work as future must b
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
