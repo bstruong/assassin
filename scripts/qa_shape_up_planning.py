@@ -34,6 +34,8 @@ def main() -> int:
         ROOT / "docs" / "specs" / "pitch_design_truthfulness.md",
         ROOT / "AGENTS.md",
         ROOT / "docs" / "architecture" / "system_design.md",
+        ROOT / "docs" / "specs" / "visuals" / "README.md",
+        ROOT / "docs" / "specs" / "visuals" / "dashboard_baseline_wireframe.html",
     ]
     for path in required:
         if path.is_file():
@@ -49,6 +51,8 @@ def main() -> int:
         "Shipped bets archive",
         "Cool-down queue",
         "circuit breaker",
+        "Visuals in shaping",
+        "Single Vault",
     ):
         if needle.lower() in arch.lower():
             _pass(f"ARCH_PLAN.md contains `{needle}`")

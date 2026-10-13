@@ -142,6 +142,8 @@ Before a pull request can be merged, the Reviewer Agent verifies:
 
 Planning follows Shape Up: raw backlog → shape pitch → PM bets → cloud agent builds within appetite → ship or circuit-break → cool-down. See `ARCH_PLAN.md` and `docs/specs/`.
 
+**Visuals:** For any user-visible surface, produce fat-marker / low-fi wireframes under `docs/specs/visuals/` during **shaping** (before betting). Do not defer first product visuals to mid-build. Product architecture is a **single Vault**—no separate AI Brain / workstation-GPU runtime.
+
 ### Cloud agent (Shaper / Builder) — Cloud-Build Mode
 - **Role:** Primary author and implementation agent while Cloud-Build Mode is active.
 - **Responsibilities:**

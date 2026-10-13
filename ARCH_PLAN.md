@@ -11,8 +11,10 @@ Active work lives here and in [`docs/specs/`](docs/specs/). Architecture contrac
 - **Fixed time, variable scope.** Each bet has an appetite. When the appetite ends: ship cut scope or circuit-break (drop the bet). No silent extensions.
 - **No endless backlog commitment.** Raw ideas are not scheduled. Only shaped pitches may be bet on.
 - **Cloud-Build Mode.** One cloud agent surface shapes pitches and implements chosen bets (TDD, QA script, PR).
+- **Single Vault product.** No “AI Brain” / workstation-GPU runtime in the architecture. Optional frontier sees sanitized aggregates only.
+- **Visuals in shaping.** For user-visible work, fat-marker wireframes land in `docs/specs/visuals/` **before** betting—not during the build. See [`docs/specs/visuals/README.md`](docs/specs/visuals/README.md).
 - **Circuit breaker.** Appetite expiry is final for that cycle. Unfinished scope returns to raw backlog or is reshaped—never carried as “almost done” debt without a new bet.
-- **Acceptance.** PM verifies with `uv run python scripts/qa_<feature>.py` (and Manual UI QA when the surface is browser-visible)—not by reading diffs.
+- **Acceptance.** PM verifies with `uv run python scripts/qa_<feature>.py`, wireframes (if UI), and Manual UI QA when browser-visible—not by reading diffs alone.
 
 ---
 

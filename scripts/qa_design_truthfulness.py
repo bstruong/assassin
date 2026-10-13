@@ -42,6 +42,7 @@ def main() -> int:
         "docs/specs",
         "CREATE TABLE holdings",
         "Code alignment (shipped)",
+        "Deployment Architecture (single Vault)",
     )
     for needle in required:
         if needle in text:
@@ -75,6 +76,17 @@ def main() -> int:
         (
             "splits into the three abstract subclasses (migration todo)",
             re.compile(r"splits\s+into\s+the\s+three\s+abstract", re.IGNORECASE),
+        ),
+        (
+            "AI Brain workstation deployment as architecture",
+            re.compile(
+                r"The AI Brain \(Workstation/Local GPU\)",
+                re.IGNORECASE,
+            ),
+        ),
+        (
+            "Ollama workstation:11434 inference box",
+            re.compile(r"workstation-ip>:11434|11434", re.IGNORECASE),
         ),
     ]
     for label, pattern in banned_patterns:

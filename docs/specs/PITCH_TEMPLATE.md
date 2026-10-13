@@ -21,6 +21,17 @@ State the chosen appetite and what “good enough” means when time runs out.
 
 Sketch the elements and how they connect. Prefer boxes and arrows in prose or a small mermaid diagram. Not a pixel-perfect design and not a task checklist.
 
+## Visuals (shaping — required if user-visible)
+
+Mockups / wireframes are produced in **shaping**, before the betting table—not mid-build.
+
+- Link a fat-marker or low-fi wireframe under [`docs/specs/visuals/`](visuals/).
+- Baseline vs proposed must be obvious in the filename or caption.
+- Skip only when Done-when says Manual UI QA is not applicable.
+- High-fidelity pixel comps are optional and must not gate the bet.
+
+See [`visuals/README.md`](visuals/README.md).
+
 ## Rabbit holes
 
 Known places where builders can sink unlimited time. Call them out so the bet stays honest.
@@ -32,7 +43,9 @@ Explicit exclusions for this appetite. What we will **not** build even if it see
 ## Done-when
 
 - [ ] Executable QA: `uv run python scripts/qa_<name>.py` prints `[PASS]` / `[FAIL]` for happy and negative cases  
-- [ ] Manual UI QA: click path + expected screen result, **or** `Manual UI QA: not applicable (no user-visible UI).`  
+- [ ] Manual UI QA: click path + expected screen result matching the shaping wireframe, **or** `Manual UI QA: not applicable (no user-visible UI).`  
+- [ ] If user-visible: wireframe linked from this pitch under `docs/specs/visuals/`  
+
 - [ ] Core invariants held: integer cents, fail-loud contracts, no PII/amount logging  
 - [ ] CI gates: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest --cov=app --cov-fail-under=90 -v`  
 - [ ] `ARCH_PLAN.md` updated (shipped archive or circuit-break note)
