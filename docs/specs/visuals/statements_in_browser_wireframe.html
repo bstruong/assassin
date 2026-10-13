@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASSASSIN — Statements in browser (proposed)</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #222;
+      --paper: #f3f1ec;
+      --panel: #fff;
+      --accent: #0b3d2e;
+      --err: #6b1d1d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 3px solid var(--line);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    header p {
+      margin: 0.4rem 0 0;
+      color: var(--mute);
+      font-size: 0.85rem;
+      max-width: 44rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--mute);
+    }
+    .meta span {
+      border: 1px dashed var(--mute);
+      padding: 0.15rem 0.5rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 8rem);
+      border-bottom: 3px solid var(--line);
+    }
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .pane {
+      background: var(--panel);
+      border-right: 2px solid var(--line);
+      padding: 1rem 1.25rem 1.5rem;
+      min-height: 22rem;
+    }
+    .pane:last-child { border-right: none; }
+    .pane h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+    .box {
+      border: 2px solid var(--line);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .box label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--mute);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+    }
+    .ghost { color: var(--mute); font-size: 0.8rem; }
+    .btn {
+      display: inline-block;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      background: transparent;
+    }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .err {
+      border-color: var(--err);
+      color: var(--err);
+    }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.35rem 0.45rem;
+      text-align: left;
+    }
+    th { background: #eee; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    footer {
+      padding: 1rem 1.5rem 2rem;
+      font-size: 0.8rem;
+      color: var(--mute);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ASSASSIN · Statements in browser (proposed)</h1>
+    <p>
+      Shaping wireframe for the bet: upload a PDF on the Vault dashboard, persist
+      via ingest, show a deterministic templated ledger in Pane 2 (not generative HTML).
+    </p>
+    <div class="meta">
+      <span>Phase: Shaping / proposed</span>
+      <span>Bet: statements-in-browser</span>
+      <span>Data: SYNTHETIC / one locked institution</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="pane" aria-label="Ask and upload">
+      <h2>1 · Upload &amp; actions</h2>
+      <div class="box">
+        <label>Statement PDF</label>
+        <p class="ghost">Choose file… SYNTHETIC_statement.pdf</p>
+        <div class="row">
+          <span class="btn primary">Upload to Vault</span>
+        </div>
+      </div>
+      <div class="box">
+        <label>Ingest status (templated)</label>
+        <p class="ghost">run_id · status = canonical_persisted · adapter = &lt;locked&gt;</p>
+      </div>
+      <div class="box err">
+        <label>Negative: unmatched / malformed</label>
+        <p>ADAPTER_MATCH_FAILED — no silent skip</p>
+      </div>
+      <div class="box">
+        <label>Frontier verify (unchanged, aggregates only)</label>
+        <div class="row">
+          <span class="btn">Verify &amp; Analyze with Frontier Model</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Ledger results">
+      <h2>2 · Vault ledger (templated)</h2>
+      <div class="box">
+        <label>Statement</label>
+        <p class="ghost">Institution · mask *0000 · 2024-01-01 → 2024-01-31</p>
+        <p class="ghost">opening_cents / closing_cents from DB</p>
+      </div>
+      <div class="box">
+        <label>Transactions (integer cents)</label>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="num">Amount (cents)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2024-01-05</td>
+              <td>deposit</td>
+              <td>SYNTHETIC PAYROLL</td>
+              <td class="num">250000</td>
+            </tr>
+            <tr>
+              <td>2024-01-12</td>
+              <td>withdrawal</td>
+              <td>SYNTHETIC RENT</td>
+              <td class="num">-180000</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="ghost" style="margin-top:0.6rem;">
+          Same template every time — values from Postgres, not LLM HTML.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Done-when for PM:</strong> upload happy path shows ledger rows from Vault;
+    bad PDF shows loud error in Pane 1/2; Analyze fake metrics are gone.
+  </footer>
+</body>
+</html>
