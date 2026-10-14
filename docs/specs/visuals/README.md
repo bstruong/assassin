@@ -31,4 +31,5 @@ Shape Up intentionally avoids high-fidelity pixel comps as a gating artifact. Pr
 |------|---------|
 | [dashboard_baseline_wireframe.html](dashboard_baseline_wireframe.html) | Early Vault dashboard (dual pane: ask + results / frontier verify) |
 | [statements_in_browser_wireframe.html](statements_in_browser_wireframe.html) | **Baseline** — PDF upload + templated DB ledger (shipped) |
-| [account_overview_wireframe.html](account_overview_wireframe.html) | **Proposed** — YNAB-useful account overview on load; transactions as drill-in |
+| [account_overview_wireframe.html](account_overview_wireframe.html) | **Baseline** — YNAB-useful account overview on load; transactions as drill-in (shipped) |
+| [ynab_budgets_wireframe.html](ynab_budgets_wireframe.html) | **Proposed** — Ready to Assign + envelopes (YNAB budgets bet) |

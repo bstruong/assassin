@@ -48,7 +48,7 @@ Explicit exclusions for this appetite. What we will **not** build even if it see
 
 - [ ] Core invariants held: integer cents, fail-loud contracts, no PII/amount logging  
 - [ ] CI gates: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest --cov=app --cov-fail-under=90 -v`  
-- [ ] `ARCH_PLAN.md` updated (shipped archive or circuit-break note)
+- [ ] GitHub Project board updated (Lane=Shipped / Circuit-broken / Raw); `ARCH_PLAN.md` pointer stays accurate
 
 ## Circuit breaker
 

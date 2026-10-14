@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASSASSIN — YNAB budgets / envelopes (proposed)</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #222;
+      --paper: #eef2e8;
+      --panel: #fff;
+      --accent: #2c4a1e;
+      --err: #6b1d1d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 3px solid var(--line);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    header p {
+      margin: 0.4rem 0 0;
+      color: var(--mute);
+      font-size: 0.85rem;
+      max-width: 48rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--mute);
+    }
+    .meta span {
+      border: 1px dashed var(--mute);
+      padding: 0.15rem 0.5rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      min-height: calc(100vh - 9rem);
+      border-bottom: 3px solid var(--line);
+    }
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .pane {
+      background: var(--panel);
+      border-right: 2px solid var(--line);
+      padding: 1rem 1.25rem 1.5rem;
+      min-height: 22rem;
+    }
+    .pane:last-child { border-right: none; }
+    .pane h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+    .box {
+      border: 2px solid var(--line);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .box label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--mute);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+    }
+    .ghost { color: var(--mute); font-size: 0.8rem; }
+    .btn {
+      display: inline-block;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      background: transparent;
+    }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .tabs span {
+      border: 2px solid var(--line);
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .tabs .on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .ready {
+      font-size: 1.25rem;
+      font-variant-numeric: tabular-nums;
+      margin: 0.35rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 0.35rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.4rem 0.45rem;
+      text-align: left;
+    }
+    th { background: #eee; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .err {
+      border-color: var(--err);
+      color: var(--err);
+    }
+    footer {
+      padding: 1rem 1.5rem 2rem;
+      font-size: 0.8rem;
+      color: var(--mute);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ASSASSIN · YNAB budgets / envelopes (proposed)</h1>
+    <p>
+      Give dollars a job: Ready to Assign plus envelope balances (integer cents stored,
+      USD shown). Account overview remains available; budgets are the planning surface.
+    </p>
+    <div class="meta">
+      <span>Phase: Shaping / proposed</span>
+      <span>Bet: ynab-budgets</span>
+      <span>Data: SYNTHETIC · integer cents → USD</span>
+      <span>Board: GitHub Project ASSASSIN Shape Up</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="pane" aria-label="Actions">
+      <h2>1 · Upload &amp; overview (unchanged)</h2>
+      <div class="box">
+        <label>Statement PDF</label>
+        <p class="ghost">Upload still feeds Vault balances.</p>
+        <span class="btn primary">Upload to Vault</span>
+      </div>
+      <div class="box">
+        <label>Assign to envelope</label>
+        <p class="ghost">Envelope: SYNTHETIC Groceries</p>
+        <p class="ghost">Amount: $50.00 → 5000 cents</p>
+        <span class="btn primary">Assign</span>
+      </div>
+      <div class="box err">
+        <label>Negative: over-assign</label>
+        <p>ASSIGN_EXCEEDS_AVAILABLE — no silent clamp</p>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Budget">
+      <h2>2 · Budget</h2>
+      <div class="tabs">
+        <span>Overview</span>
+        <span class="on">Budget</span>
+      </div>
+      <div class="box">
+        <label>Ready to Assign</label>
+        <div class="ready">$1,245.00</div>
+        <p class="ghost">From Vault closings minus envelope assignments (cents math).</p>
+      </div>
+      <div class="box">
+        <label>Envelopes</label>
+        <table>
+          <thead>
+            <tr>
+              <th>Envelope</th>
+              <th class="num">Assigned</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SYNTHETIC Groceries</td>
+              <td class="num">$350.00</td>
+            </tr>
+            <tr>
+              <td>SYNTHETIC Rent</td>
+              <td class="num">$1,800.00</td>
+            </tr>
+            <tr>
+              <td>SYNTHETIC Buffer</td>
+              <td class="num">$200.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ghost">No goals, no multi-month grid in this appetite.</p>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Done-when for PM:</strong> Budget tab shows Ready to Assign + envelopes as USD;
+    Assign updates balances; over-assign fails loud; storage remains integer cents.
+  </footer>
+</body>
+</html>

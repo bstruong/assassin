@@ -1,8 +1,23 @@
-# ARCH_PLAN — Shape Up Control Plane
+# ARCH_PLAN — Shape Up process (board pointer)
 
 **Operating mode: Cloud-Build** (temporary). Cloud agents shape and build. The human PM bets and accepts via QA. Local Tier-1 / `pi-up.sh` is out of process until explicitly re-enabled.
 
-Active work lives here and in [`docs/specs/`](docs/specs/). Architecture contracts stay in [`docs/architecture/`](docs/architecture/). Do not append undated “Phase N” checklists to `system_design.md`.
+## Live board (source of truth)
+
+The Shape Up **betting table / in-bet / shipped / cool-down / raw** board lives in a **private GitHub Project** (Projects v2 — not a repository):
+
+| Field | Value |
+|-------|--------|
+| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects) — create/migrate with `bash scripts/migrate_shape_up_github_project.sh` if the URL is not yet filled in |
+| **Visibility** | **Private** |
+| **Owner** | `@bstruong` (personal Projects) |
+| **Lane field** | Raw \| Shaped \| In-bet \| Shipped \| Circuit-broken \| Cool-down \| Deferred |
+
+After first migration, replace the projects index link above with the concrete project URL printed by the script (e.g. `https://github.com/users/bstruong/projects/N`).
+
+Pitches and wireframes stay in-repo under [`docs/specs/`](docs/specs/). Architecture contracts stay in [`docs/architecture/`](docs/architecture/). Do **not** append undated “Phase N” checklists to `system_design.md`.
+
+**Agents:** read/update the GitHub Project for board state; keep pitch markdown + visuals in git. Do not reintroduce a second live board table in this file.
 
 ---
 
@@ -13,7 +28,7 @@ Active work lives here and in [`docs/specs/`](docs/specs/). Architecture contrac
 - **Cloud-Build Mode.** One cloud agent surface shapes pitches and implements chosen bets (TDD, QA script, PR). **No local coding models** required for development.
 - **Single Vault product.** One trust boundary. **Local models stay for the PII strip/parse pipeline** (Vault-side runtime). Optional frontier sees sanitized aggregates only. Not a separate “AI Brain” product box.
 - **Visuals in shaping.** For user-visible work, fat-marker wireframes land in `docs/specs/visuals/` **before** betting—not during the build. See [`docs/specs/visuals/README.md`](docs/specs/visuals/README.md).
-- **Circuit breaker.** Appetite expiry is final for that cycle. Unfinished scope returns to raw backlog or is reshaped—never carried as “almost done” debt without a new bet.
+- **Circuit breaker.** Appetite expiry is final for that cycle. Unfinished scope returns to raw backlog (Project Lane=Raw) or is reshaped—never carried as “almost done” debt without a new bet.
 - **Acceptance.** PM verifies with `uv run python scripts/qa_<feature>.py`, wireframes (if UI), and Manual UI QA when browser-visible—not by reading diffs alone.
 
 ---
@@ -22,66 +37,41 @@ Active work lives here and in [`docs/specs/`](docs/specs/). Architecture contrac
 
 | Role | Who | Does |
 |------|-----|------|
-| **Shaper / Builder** | Cloud agent | Write/edit pitches; keep this board current; implement chosen bets |
+| **Shaper / Builder** | Cloud agent | Write/edit pitches; keep the **GitHub Project** current; implement chosen bets |
 | **Bettor / QA** | Human PM | Choose ≤2 bets per cycle; run QA; accept or reject |
 
 No local Tier-1 builder role while Cloud-Build Mode is active.
 
 ---
 
-## Current cycle
+## Board → Project mapping
 
-| Field | Value |
-|-------|--------|
-| **Cycle id** | `cycle-2026-w42` |
-| **Mode** | Cloud-Build |
-| **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
-| **In-bet pitches** | [Account overview home](docs/specs/pitch_account_overview.md) |
-| **Hill status** | Downhill — overview on load + Details drill-in implemented in-branch |
+| Shape Up concept | GitHub Project |
+|------------------|----------------|
+| Raw backlog | Item with Lane=**Raw** |
+| Betting table (shaped, not committed) | Lane=**Shaped** (or **Deferred**) |
+| In-bet | Lane=**In-bet** |
+| Shipped archive | Lane=**Shipped** |
+| Cool-down chores | Lane=**Cool-down** |
+| Pitch doc | Custom field **Pitch path** → `docs/specs/pitch_*.md` |
+| Appetite | Custom field **Appetite** |
+| Cycle id | Custom field **Cycle** (e.g. `cycle-2026-w42`) |
 
-**Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
-
----
-
-## Betting table
-
-Shaped candidates for the **next** bet. Listing here is **not** a commitment.
-
-| Pitch | Appetite | Summary | Status |
-|-------|----------|---------|--------|
-| [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — deferred (not on critical path to personal Vault home) |
-
-Unshaped one-liners live in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md).
+One-liners may still be sketched in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md) before they become Project items; the Project wins when they disagree.
 
 ---
 
-## Shipped bets archive
+## Migrate / refresh the Project
 
-Do not re-queue these as roadmap items.
+```bash
+gh auth refresh -s project,read:project
+bash scripts/migrate_shape_up_github_project.sh
+```
 
-| Bet | Outcome |
-|-----|---------|
-| Pipeline steps 1–9 (contracts → extract → depository/card → Postgres → investment → registry → combined → ingest) | Shipped — baseline |
-| Phase 2 HTMX dashboard + tiered MCP + frontier aggregate audit | Shipped — baseline |
-| Local HTMX asset + AGENTS frontend SRI ban + Playwright dashboard E2E | Shipped |
-| Holdings (`quantity_nanos` / `market_value_cents`), Vanguard adapter, portfolio bridge | Shipped |
-| App-side telemetry helpers + QA scripts | Shipped (full Watchtower stack remains a separate pitch) |
-| Spec & design truthfulness (`system_design.md` shipped vs raw framing + `qa_design_truthfulness.py`) | Shipped |
-| Single Vault (drop AI Brain / workstation GPU) + shaping-phase wireframe requirement | Shipped |
-| Statements in the browser (Chase + Schwab upload → templated DB ledger) | Shipped — [#49](https://github.com/bstruong/assassin/pull/49) |
-
----
-
-## Cool-down queue
-
-Unshaped chores only—not new features. Pick up between cycles.
-
-- CI nits that do not change product surface.
-- Mutation nightly / coverage hygiene with no new capability.
-- Deep copy-edit of remaining historical paragraphs in architecture docs (optional polish; not a feature).
+Then paste the printed URL into the pointer table at the top of this file.
 
 ---
 
 ## Pitch template
 
-New shaped work: copy [`docs/specs/PITCH_TEMPLATE.md`](docs/specs/PITCH_TEMPLATE.md).
+New shaped work: copy [`docs/specs/PITCH_TEMPLATE.md`](docs/specs/PITCH_TEMPLATE.md), add a Project item (Lane=**Shaped**), link **Pitch path**.

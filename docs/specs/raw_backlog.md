@@ -2,14 +2,15 @@
 
 Unshaped ideas only. One line each. **No estimates, no dates, no commitment.**
 
-To schedule work: shape a pitch from [`PITCH_TEMPLATE.md`](PITCH_TEMPLATE.md), then place it on the betting table in [`ARCH_PLAN.md`](../../ARCH_PLAN.md).
+**Live board:** private GitHub Project **ASSASSIN Shape Up** (see `ARCH_PLAN.md`). Prefer creating Project items (Lane=Raw) when scheduling. This file is a scratch pad; the Project wins on conflict.
+
+To schedule work: shape a pitch from [`PITCH_TEMPLATE.md`](PITCH_TEMPLATE.md), add/update the Project item (Lane=Shaped), then bet.
 
 ---
 
-- Additional depository / card institution adapters beyond the first locked institution (see statements-in-browser bet)
+- Additional depository / card institution adapters beyond the first locked institution
 - Synthetic PDF fixtures (beyond JSON token fixtures) for layout-hard statements
 - Full Grafana Tempo / Prometheus / Loki dashboards beyond collector smoke (depends on Watchtower telemetry pitch)
 - Traefik ingress hardening notes for Vault deployment
-- YNAB-style budgets / envelopes / goals / “give every dollar a job” (after account overview home)
 - Multi-month net-worth history charts beyond the account overview snapshot
-- Category assignment UI for personal budgeting (after overview home)
+- Transaction → envelope linking (if circuit-broken out of YNAB budgets Small Batch)
