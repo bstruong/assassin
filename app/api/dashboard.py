@@ -46,9 +46,61 @@ router = APIRouter()
 dashboard_api = APIRouter(prefix="/api/v1/dashboard")
 
 
+def _overview_accounts(*, limit: int = 50) -> list[dict[str, Any]]:
+    """Latest statement per account for the overview table (no txn rows)."""
+    rows: list[dict[str, Any]] = []
+    seen_accounts: set[UUID] = set()
+    with get_db_connection() as conn:
+        recent = list_recent_statements(conn, limit=limit)
+        for account, statement, txn_count in recent:
+            if account.account_id in seen_accounts:
+                continue
+            seen_accounts.add(account.account_id)
+            rows.append(
+                {
+                    "statement_id": str(statement.statement_id),
+                    "institution": account.institution,
+                    "account_type": account.account_type.value,
+                    "account_mask": account.account_mask,
+                    "start_date": statement.statement_start_date.isoformat(),
+                    "end_date": statement.statement_end_date.isoformat(),
+                    "opening_balance_cents": statement.opening_balance_cents,
+                    "closing_balance_cents": statement.closing_balance_cents,
+                    "net_change_cents": statement.net_change_cents,
+                    "txn_count": txn_count,
+                }
+            )
+    return rows
+
+
+def _render_overview_html() -> str:
+    """Templated account overview or empty state (never fake zero portfolio)."""
+    try:
+        accounts = _overview_accounts()
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Dashboard overview query failed",
+            extra={"error_type": type(exc).__name__},
+        )
+        return env.get_template("upload_error.html").render(
+            error_code="OVERVIEW_QUERY_FAILED",
+            detail="Could not load account overview from the Vault database.",
+        )
+    if not accounts:
+        return env.get_template("account_overview_empty.html").render()
+    total_closing = sum(int(row["closing_balance_cents"]) for row in accounts)
+    return env.get_template("account_overview.html").render(
+        accounts=accounts,
+        account_count=len(accounts),
+        total_closing_cents=total_closing,
+    )
+
+
 def _render_dashboard() -> str:
-    """Render the main dashboard HTML from template."""
-    return env.get_template("dashboard.html").render()
+    """Render the main dashboard HTML with Pane 2 prepopulated from Vault."""
+    return env.get_template("dashboard.html").render(
+        vault_pane_html=_render_overview_html()
+    )
 
 
 def _ledger_blocks_for_run(run_id: UUID) -> list[dict[str, Any]]:
@@ -153,8 +205,122 @@ def _render_ledger_html(
 
 @router.get("/dashboard", response_class=HTMLResponse)
 def serve_dashboard() -> HTMLResponse:
-    """Serve the main HTMX dashboard page."""
+    """Serve the main HTMX dashboard with account overview prepopulated."""
+    logger.info("Dashboard page requested", extra={"surface": "account_overview"})
     return HTMLResponse(content=_render_dashboard())
+
+
+@dashboard_api.get(
+    "/overview",
+    response_class=HTMLResponse,
+    responses={400: {"description": "Requires HTMX or overview query failed"}},
+)
+async def get_account_overview(request: Request) -> HTMLResponse:
+    """Return the account overview HTML fragment for Pane 2."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+    html = _render_overview_html()
+    status_code = (
+        status.HTTP_400_BAD_REQUEST
+        if "OVERVIEW_QUERY_FAILED" in html
+        else status.HTTP_200_OK
+    )
+    return HTMLResponse(content=html, status_code=status_code)
+
+
+@dashboard_api.get(
+    "/statements/{statement_id}",
+    response_class=HTMLResponse,
+    responses={400: {"description": "Unknown statement or missing HTMX"}},
+)
+async def get_statement_ledger(
+    request: Request,
+    statement_id: UUID,
+) -> HTMLResponse:
+    """Drill-in: templated transaction ledger for one statement."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+
+    logger.info(
+        "Dashboard statement drill-in",
+        extra={"statement_id": str(statement_id)},
+    )
+
+    try:
+        with get_db_connection() as conn:
+            loaded = get_canonical_statement(conn, statement_id)
+            if loaded is None:
+                return HTMLResponse(
+                    content=env.get_template("upload_error.html").render(
+                        error_code="STATEMENT_NOT_FOUND",
+                        detail="No statement exists for the requested id.",
+                    ),
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+            statement, _summary, transactions = loaded
+            account = None
+            for acc, stmt, _count in get_run_statements(conn, statement.run_id):
+                if stmt.statement_id == statement_id:
+                    account = acc
+                    break
+            if account is None:
+                return HTMLResponse(
+                    content=env.get_template("upload_error.html").render(
+                        error_code="STATEMENT_NOT_FOUND",
+                        detail="Statement account header could not be resolved.",
+                    ),
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+            holdings = get_statement_holdings(conn, statement_id)
+            block = {
+                "institution": account.institution,
+                "account_type": account.account_type.value,
+                "account_mask": account.account_mask,
+                "start_date": statement.statement_start_date.isoformat(),
+                "end_date": statement.statement_end_date.isoformat(),
+                "opening_balance_cents": statement.opening_balance_cents,
+                "closing_balance_cents": statement.closing_balance_cents,
+                "transactions": [
+                    {
+                        "post_date": txn.post_date.isoformat(),
+                        "category": txn.transaction_category.value,
+                        "description": txn.description,
+                        "amount_cents": txn.amount_cents,
+                    }
+                    for txn in transactions
+                ],
+                "holdings": [
+                    {
+                        "symbol": holding.symbol,
+                        "description": holding.description,
+                        "quantity_nanos": holding.quantity_nanos,
+                        "market_value_cents": holding.market_value_cents,
+                    }
+                    for holding in holdings
+                ],
+            }
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Dashboard statement drill-in failed",
+            extra={"error_type": type(exc).__name__},
+        )
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="LEDGER_QUERY_FAILED",
+                detail="Could not load statement ledger from the Vault database.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return HTMLResponse(content=_render_ledger_html(ledgers=[block]))
 
 
 @dashboard_api.post(

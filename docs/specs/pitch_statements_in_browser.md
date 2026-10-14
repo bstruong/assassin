@@ -1,6 +1,6 @@
 # Pitch: Statements in the browser
 
-**Status:** Bet  
+**Status:** Shipped  
 **Builder:** Cloud agent (Cloud-Build Mode)  
 **Bettor:** Human PM  
 **Appetite:** Small Batch (2 weeks)  
@@ -67,7 +67,7 @@ flowchart LR
 - [x] Manual UI QA documented below
 - [x] Proposed wireframe linked
 - [x] Institution lock: Charles Schwab + Chase
-- [ ] CI gates green on PR; archive bet after merge
+- [x] CI gates green on PR; archived after merge (#49)
 
 ## Manual UI QA
 

@@ -37,7 +37,7 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
 | **In-bet pitches** | [Account overview home](docs/specs/pitch_account_overview.md) |
-| **Hill status** | Uphill — overview on load + transaction drill-in |
+| **Hill status** | Downhill — overview on load + Details drill-in implemented in-branch |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
 

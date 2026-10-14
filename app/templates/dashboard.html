@@ -100,13 +100,10 @@
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Ledger results</span>
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Account overview</span>
             </div>
             <div class="pane-body" id="pane-vault-body">
-                <div class="empty-state">
-                    <div class="icon">&#128202;</div>
-                    <p>Upload a Chase or Schwab PDF to begin</p>
-                </div>
+                {{ vault_pane_html | safe }}
             </div>
         </div>
     </div>
@@ -120,7 +117,9 @@
             var isFrontier = url.indexOf("/api/v1/dashboard/frontier-audit") !== -1;
             var isUpload = url.indexOf("/api/v1/dashboard/upload") !== -1;
             var isAnalyze = url.indexOf("/api/v1/dashboard/analyze") !== -1;
-            if ((isFrontier || isUpload || isAnalyze) && xhr.status === 400) {
+            var isStatement = url.indexOf("/api/v1/dashboard/statements/") !== -1;
+            var isOverview = url.indexOf("/api/v1/dashboard/overview") !== -1;
+            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview) && xhr.status === 400) {
                 event.detail.shouldSwap = true;
                 event.detail.isError = false;
             }

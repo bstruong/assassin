@@ -1,11 +1,11 @@
 # Pitch: Account overview home
 
-**Status:** Shaped  
+**Status:** Bet  
 **Builder:** Cloud agent (Cloud-Build Mode)  
 **Bettor:** Human PM  
 **Appetite:** Small Batch (2 weeks)  
 **Product north star:** YNAB-useful personal Vault — accounts & totals first; transactions as drill-down  
-**Depends on:** Statements in the browser (upload → persisted ledger) — [PR #49](https://github.com/bstruong/assassin/pull/49) / pitch once merged
+**Depends on:** Statements in the browser — shipped ([#49](https://github.com/bstruong/assassin/pull/49))
 
 ---
 
@@ -66,21 +66,21 @@ flowchart LR
 
 ## Done-when
 
-- [ ] `uv run python scripts/qa_account_overview.py` — happy: seeded DB → overview on dashboard load with integer-cent fields; empty DB → empty state; drill-in shows transactions; negative: fail-loud on bad request/id
-- [ ] Manual UI QA documented below (matches proposed wireframe)
-- [ ] Proposed wireframe linked
+- [x] `uv run python scripts/qa_account_overview.py` — happy: seeded DB → overview on dashboard load with integer-cent fields; empty DB → empty state; drill-in shows transactions; negative: fail-loud on bad request/id
+- [x] Manual UI QA documented below (matches proposed wireframe)
+- [x] Proposed wireframe linked
 - [ ] Core invariants: integer cents, fail-loud, no PII/amount logging
 - [ ] CI gates green; `ARCH_PLAN.md` archive or circuit-break note
 
-## Manual UI QA (for build cycle — not yet implemented)
+## Manual UI QA
 
-1. Ensure Vault DB has at least one ingested statement (or empty for empty-state check).
+1. `set -x DATABASE_URL postgresql://postgres:assassin@localhost:54329/assassin_test` (fish) — or your Vault URL
 2. `uv run uvicorn app.api.app:app --host 127.0.0.1 --port 8000`
 3. Open `http://127.0.0.1:8000/dashboard`
-4. Happy (data present): Pane 2 shows **Account overview** with per-account high-level integer-cent metrics **without** clicking Analyze/Upload.
-5. Drill-in: select an account → transaction table appears; overview still reachable.
-6. Empty DB: Pane 2 shows empty state (not fake zeros).
-7. Negative: request drill-in for unknown statement → loud error in pane (not silent empty success).
+4. Empty DB: Pane 2 shows **Account overview** + “No persisted statements yet”
+5. Happy: upload Chase/Schwab synthetic PDFs (same as #49), then **refresh** the page → Pane 2 shows per-account Opening/Closing/Net integer cents **without** a transaction table
+6. Drill-in: click **Details** → **Vault Ledger** with transactions; **Back to overview** returns to the summary
+7. Negative: unknown statement id → **Upload rejected** / `STATEMENT_NOT_FOUND`
 
 ## Circuit breaker
 
