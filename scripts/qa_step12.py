@@ -206,14 +206,14 @@ def main() -> None:
             check(f"No PII pattern '{pattern}'", pattern.lower() not in body.lower())
 
         # ------------------------------------------------------------------
-        # 10. Financial precision — no floats
+        # 10. Financial precision — USD display from cents, no float slop
         # ------------------------------------------------------------------
-        print("\n[10] Financial Precision (Integer Cents)")
-        dollar_floats = re.findall(r"\$\d+\.\d{2,}", body)
+        print("\n[10] Financial Precision (USD from integer cents)")
+        float_slop = re.findall(r"\$\d[\d,]*\.\d{3,}", body)
         check(
-            "No floating-point dollar amounts",
-            len(dollar_floats) == 0,
-            str(dollar_floats),
+            "No float-slop dollar amounts (3+ decimals)",
+            len(float_slop) == 0,
+            str(float_slop),
         )
 
         # ------------------------------------------------------------------

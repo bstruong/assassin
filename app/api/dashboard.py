@@ -32,6 +32,7 @@ from app.db.repository import (
 )
 from app.mcp.cloud_tools import CloudToolError, get_financial_summary
 from app.pipeline.ingest_service import IngestFailure, IngestSuccess, ingest_pdf_path
+from app.presentation.money_format import format_usd_cents
 
 logger = logging.getLogger("app.api.dashboard")
 
@@ -41,6 +42,8 @@ env = Environment(
     loader=FileSystemLoader(str(TEMPLATES_DIR)),
     autoescape=select_autoescape(enabled_extensions=["html"]),
 )
+env.filters["usd_cents"] = format_usd_cents
+
 
 router = APIRouter()
 dashboard_api = APIRouter(prefix="/api/v1/dashboard")

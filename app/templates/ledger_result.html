@@ -15,15 +15,15 @@
                 hx-swap="innerHTML">Back to overview</button>
     </p>
     <p style="margin-top:12px;color:#8b949e;font-size:0.85rem;">
-        Templated ledger from Postgres. Amounts are integer cents. No generative HTML.
+        Templated ledger from Postgres (stored as integer cents, shown as USD). No generative HTML.
     </p>
     {% for block in ledgers %}
     <div style="margin-top:16px;border-top:1px solid #30363d;padding-top:12px;">
         <p><strong>{{ block.institution }}</strong> · {{ block.account_type }} · {{ block.account_mask }}</p>
         <p style="color:#8b949e;font-size:0.85rem;">
             {{ block.start_date }} → {{ block.end_date }}
-            · opening {{ block.opening_balance_cents }}
-            · closing {{ block.closing_balance_cents }}
+            · opening {{ block.opening_balance_cents | usd_cents }}
+            · closing {{ block.closing_balance_cents | usd_cents }}
         </p>
         <table class="data-table">
             <thead>
@@ -31,7 +31,7 @@
                     <th>Date</th>
                     <th>Category</th>
                     <th>Description</th>
-                    <th class="amount">Amount (cents)</th>
+                    <th class="amount">Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,7 +40,7 @@
                     <td>{{ txn.post_date }}</td>
                     <td>{{ txn.category }}</td>
                     <td>{{ txn.description }}</td>
-                    <td class="amount">{{ txn.amount_cents }}</td>
+                    <td class="amount">{{ txn.amount_cents | usd_cents }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -52,7 +52,7 @@
                     <th>Symbol</th>
                     <th>Description</th>
                     <th class="amount">Qty (nanos)</th>
-                    <th class="amount">Market value (cents)</th>
+                    <th class="amount">Market value</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,7 +61,7 @@
                     <td>{{ h.symbol }}</td>
                     <td>{{ h.description }}</td>
                     <td class="amount">{{ h.quantity_nanos }}</td>
-                    <td class="amount">{{ h.market_value_cents }}</td>
+                    <td class="amount">{{ h.market_value_cents | usd_cents }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

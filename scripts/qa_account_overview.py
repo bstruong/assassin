@@ -111,11 +111,12 @@ def main() -> int:
             and "Account overview" in dash.text
             and "Accounts" in dash.text
             and "SYNTHETIC Payroll" not in dash.text
-            and not re.findall(r"\$\d+\.\d{2,}", dash.text)
+            and re.search(r"\$\d[\d,]*\.\d{2}\b", dash.text)
+            and not re.findall(r"\$\d[\d,]*\.\d{3,}", dash.text)
         ):
-            _pass("seeded DB → high-level overview on load (no txn dump)")
+            _pass("seeded DB → high-level USD overview on load (no txn dump)")
         else:
-            _fail("seeded overview missing or still shows ledger home")
+            _fail("seeded overview missing USD formatting or still shows ledger home")
             failures += 1
 
         match = re.search(

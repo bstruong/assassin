@@ -92,16 +92,16 @@ def main() -> int:
                 response.status_code == 200
                 and "Vault Ledger" in response.text
                 and adapter_id in response.text
-                and not re.findall(r"\$\d+\.\d{2,}", response.text)
+                and re.search(r"\$\d[\d,]*\.\d{2}\b", response.text)
+                and not re.findall(r"\$\d[\d,]*\.\d{3,}", response.text)
             ):
-                _pass(f"upload {fixture} → ledger ({adapter_id})")
+                _pass(f"upload {fixture} → USD ledger ({adapter_id})")
             else:
                 _fail(
                     f"upload {fixture} unexpected "
                     f"status={response.status_code} body={response.text[:200]}"
                 )
                 failures += 1
-
         # Negative unmatched
         from reportlab.pdfgen import canvas
 

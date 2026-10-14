@@ -78,8 +78,8 @@ flowchart LR
 2. `uv run uvicorn app.api.app:app --host 127.0.0.1 --port 8000`
 3. Open `http://127.0.0.1:8000/dashboard`
 4. Empty DB: Pane 2 shows **Account overview** + “No persisted statements yet”
-5. Happy: upload Chase/Schwab synthetic PDFs (same as #49), then **refresh** the page → Pane 2 shows per-account Opening/Closing/Net integer cents **without** a transaction table
-6. Drill-in: click **Details** → **Vault Ledger** with transactions; **Back to overview** returns to the summary
+5. Happy: upload Chase/Schwab synthetic PDFs (same as #49), then **refresh** the page → Pane 2 shows per-account Opening/Closing/Net as **USD** (e.g. `$1,295.00`) **without** a transaction table; Vault still stores BIGINT cents
+6. Drill-in: click **Details** → **Vault Ledger** with USD-formatted amounts; **Back to overview** returns to the summary
 7. Negative: unknown statement id → **Upload rejected** / `STATEMENT_NOT_FOUND`
 
 ## Circuit breaker

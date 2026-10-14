@@ -83,13 +83,13 @@ class TestAccountOverviewOnLoad:
         assert response.status_code == 200
         html = response.text
         assert "Account overview" in html
-        assert "opening_balance_cents" in html or "Opening" in html
-        assert "closing_balance_cents" in html or "Closing" in html
+        assert "Opening" in html
+        assert "Closing" in html
         # High-level only on load: no full transaction table dump as the home
         assert "SYNTHETIC Payroll" not in html
-        assert re.findall(r"\$\d+\.\d{2,}", html) == []
-        # Integer cents appear as bare integers in the overview table
-        assert re.search(r">\s*-?\d+\s*<", html) is not None
+        # Stored as cents; shown as USD (two decimal places, no float slop)
+        assert re.search(r"\$\d[\d,]*\.\d{2}\b", html) is not None
+        assert re.findall(r"\$\d[\d,]*\.\d{3,}", html) == []
 
     def test_overview_includes_multiple_accounts(
         self, client: TestClient, tmp_path: Path
@@ -124,7 +124,8 @@ class TestTransactionDrillIn:
         assert "Vault Ledger" in response.text
         assert "Chase" in response.text
         assert "SYNTHETIC Payroll" in response.text
-        assert re.findall(r"\$\d+\.\d{2,}", response.text) == []
+        assert re.search(r"\$\d[\d,]*\.\d{2}\b", response.text) is not None
+        assert re.findall(r"\$\d[\d,]*\.\d{3,}", response.text) == []
 
     def test_unknown_statement_fails_loud(self, client: TestClient) -> None:
         response = client.get(

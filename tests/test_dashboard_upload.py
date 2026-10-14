@@ -56,7 +56,8 @@ class TestDashboardUpload:
         assert "Vault Ledger" in response.text
         assert "chase_depository" in response.text
         assert "SYNTHETIC Payroll" in response.text
-        assert re.findall(r"\$\d+\.\d{2,}", response.text) == []
+        assert re.search(r"\$\d[\d,]*\.\d{2}\b", response.text) is not None
+        assert re.findall(r"\$\d[\d,]*\.\d{3,}", response.text) == []
 
     def test_upload_schwab_returns_ledger(
         self, client: TestClient, tmp_path: Path
