@@ -32,6 +32,7 @@ from app.db.repository import (
 )
 from app.mcp.cloud_tools import CloudToolError, get_financial_summary
 from app.pipeline.ingest_service import IngestFailure, IngestSuccess, ingest_pdf_path
+from app.presentation.label_format import format_snake_label
 from app.presentation.money_format import format_usd_cents
 
 logger = logging.getLogger("app.api.dashboard")
@@ -43,6 +44,7 @@ env = Environment(
     autoescape=select_autoescape(enabled_extensions=["html"]),
 )
 env.filters["usd_cents"] = format_usd_cents
+env.filters["human_label"] = format_snake_label
 
 
 router = APIRouter()

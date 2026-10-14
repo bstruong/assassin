@@ -19,7 +19,7 @@
     </p>
     {% for block in ledgers %}
     <div style="margin-top:16px;border-top:1px solid #30363d;padding-top:12px;">
-        <p><strong>{{ block.institution }}</strong> · {{ block.account_type }} · {{ block.account_mask }}</p>
+        <p><strong>{{ block.institution }}</strong> · {{ block.account_type | human_label }} · {{ block.account_mask }}</p>
         <p style="color:#8b949e;font-size:0.85rem;">
             {{ block.start_date }} → {{ block.end_date }}
             · opening {{ block.opening_balance_cents | usd_cents }}
@@ -38,7 +38,7 @@
                 {% for txn in block.transactions %}
                 <tr>
                     <td>{{ txn.post_date }}</td>
-                    <td>{{ txn.category }}</td>
+                    <td>{{ txn.category | human_label }}</td>
                     <td>{{ txn.description }}</td>
                     <td class="amount">{{ txn.amount_cents | usd_cents }}</td>
                 </tr>

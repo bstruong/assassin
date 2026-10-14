@@ -32,7 +32,7 @@
             {% for row in accounts %}
             <tr>
                 <td>{{ row.institution }}</td>
-                <td>{{ row.account_type }}</td>
+                <td>{{ row.account_type | human_label }}</td>
                 <td>{{ row.account_mask }}</td>
                 <td>{{ row.start_date }} → {{ row.end_date }}</td>
                 <td class="amount">{{ row.opening_balance_cents | usd_cents }}</td>

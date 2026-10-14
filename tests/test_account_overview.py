@@ -85,6 +85,8 @@ class TestAccountOverviewOnLoad:
         assert "Account overview" in html
         assert "Opening" in html
         assert "Closing" in html
+        assert "Checking" in html or "Brokerage Cash" in html
+        assert "brokerage_cash" not in html
         # High-level only on load: no full transaction table dump as the home
         assert "SYNTHETIC Payroll" not in html
         # Stored as cents; shown as USD (two decimal places, no float slop)
@@ -124,6 +126,8 @@ class TestTransactionDrillIn:
         assert "Vault Ledger" in response.text
         assert "Chase" in response.text
         assert "SYNTHETIC Payroll" in response.text
+        assert "transfer_in" not in response.text
+        assert "Deposit" in response.text or "Withdrawal" in response.text
         assert re.search(r"\$\d[\d,]*\.\d{2}\b", response.text) is not None
         assert re.findall(r"\$\d[\d,]*\.\d{3,}", response.text) == []
 
