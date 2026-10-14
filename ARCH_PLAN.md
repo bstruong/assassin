@@ -36,8 +36,8 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Cycle id** | `cycle-2026-w42` |
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
-| **In-bet pitches** | [Account overview home](docs/specs/pitch_account_overview.md) |
-| **Hill status** | Downhill — overview on load + Details drill-in implemented in-branch |
+| **In-bet pitches** | _None — awaiting next PM bet_ |
+| **Hill status** | _n/a_ |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
 
@@ -69,6 +69,7 @@ Do not re-queue these as roadmap items.
 | Spec & design truthfulness (`system_design.md` shipped vs raw framing + `qa_design_truthfulness.py`) | Shipped |
 | Single Vault (drop AI Brain / workstation GPU) + shaping-phase wireframe requirement | Shipped |
 | Statements in the browser (Chase + Schwab upload → templated DB ledger) | Shipped — [#49](https://github.com/bstruong/assassin/pull/49) |
+| Account overview home (YNAB-useful: prepopulated USD overview + drill-in) | Shipped — [#50](https://github.com/bstruong/assassin/pull/50) |
 
 ---
 
