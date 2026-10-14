@@ -8,16 +8,17 @@ The Shape Up **betting table / in-bet / shipped / cool-down / raw** board lives 
 
 | Field | Value |
 |-------|--------|
-| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects) — create/migrate with `bash scripts/migrate_shape_up_github_project.sh` if the URL is not yet filled in |
+| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects/5) |
 | **Visibility** | **Private** |
 | **Owner** | `@bstruong` (personal Projects) |
+| **Primary view** | **Board** by **Lane** (Table optional for betting; avoid Roadmap) |
 | **Lane field** | Raw \| Shaped \| In-bet \| Shipped \| Circuit-broken \| Cool-down \| Deferred |
 
-After first migration, replace the projects index link above with the concrete project URL printed by the script (e.g. `https://github.com/users/bstruong/projects/N`).
+Re-seed / refresh fields+items: `bash scripts/migrate_shape_up_github_project.sh` (owner workstation; cloud bot cannot access private Projects).
 
 Pitches and wireframes stay in-repo under [`docs/specs/`](docs/specs/). Architecture contracts stay in [`docs/architecture/`](docs/architecture/). Do **not** append undated “Phase N” checklists to `system_design.md`.
 
-**Agents:** read/update the GitHub Project for board state; keep pitch markdown + visuals in git. Do not reintroduce a second live board table in this file.
+**Agents:** treat [projects/5](https://github.com/users/bstruong/projects/5) as board SoT when the PM grants access; until then, keep pitch markdown + this pointer in git. Do not reintroduce a second live board table in this file.
 
 ---
 
