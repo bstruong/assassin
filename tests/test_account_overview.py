@@ -89,6 +89,7 @@ class TestAccountOverviewOnLoad:
         assert "brokerage_cash" not in html
         assert 'class="period"' in html
         assert "white-space: nowrap" in html or "period" in html
+        assert ">Txns<" not in html and "Total transactions" not in html
         # High-level only on load: no full transaction table dump as the home
         assert "SYNTHETIC Payroll" not in html
         # Stored as cents; shown as USD (two decimal places, no float slop)

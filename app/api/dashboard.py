@@ -57,7 +57,7 @@ def _overview_accounts(*, limit: int = 50) -> list[dict[str, Any]]:
     seen_accounts: set[UUID] = set()
     with get_db_connection() as conn:
         recent = list_recent_statements(conn, limit=limit)
-        for account, statement, txn_count in recent:
+        for account, statement, _txn_count in recent:
             if account.account_id in seen_accounts:
                 continue
             seen_accounts.add(account.account_id)
@@ -72,7 +72,6 @@ def _overview_accounts(*, limit: int = 50) -> list[dict[str, Any]]:
                     "opening_balance_cents": statement.opening_balance_cents,
                     "closing_balance_cents": statement.closing_balance_cents,
                     "net_change_cents": statement.net_change_cents,
-                    "txn_count": txn_count,
                 }
             )
     return rows
