@@ -34,7 +34,9 @@
         .data-table th { background: #161b22; color: #58a6ff; padding: 8px 12px; text-align: left; border-bottom: 1px solid #30363d; }
         .data-table td { padding: 8px 12px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
         .data-table tr:hover td { background: #161b22; }
-        .amount { text-align: right; font-variant-numeric: tabular-nums; }
+        .table-scroll { overflow-x: auto; width: 100%; }
+        .period { white-space: nowrap; min-width: 14rem; }
+        .amount { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
         .status-ok { background: #238636; color: #fff; }
         .status-warn { background: #9e6a03; color: #fff; }
@@ -100,13 +102,10 @@
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Ledger results</span>
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Account overview</span>
             </div>
             <div class="pane-body" id="pane-vault-body">
-                <div class="empty-state">
-                    <div class="icon">&#128202;</div>
-                    <p>Upload a Chase or Schwab PDF to begin</p>
-                </div>
+                {{ vault_pane_html | safe }}
             </div>
         </div>
     </div>
@@ -120,7 +119,9 @@
             var isFrontier = url.indexOf("/api/v1/dashboard/frontier-audit") !== -1;
             var isUpload = url.indexOf("/api/v1/dashboard/upload") !== -1;
             var isAnalyze = url.indexOf("/api/v1/dashboard/analyze") !== -1;
-            if ((isFrontier || isUpload || isAnalyze) && xhr.status === 400) {
+            var isStatement = url.indexOf("/api/v1/dashboard/statements/") !== -1;
+            var isOverview = url.indexOf("/api/v1/dashboard/overview") !== -1;
+            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview) && xhr.status === 400) {
                 event.detail.shouldSwap = true;
                 event.detail.isError = false;
             }

@@ -10,5 +10,6 @@ To schedule work: shape a pitch from [`PITCH_TEMPLATE.md`](PITCH_TEMPLATE.md), t
 - Synthetic PDF fixtures (beyond JSON token fixtures) for layout-hard statements
 - Full Grafana Tempo / Prometheus / Loki dashboards beyond collector smoke (depends on Watchtower telemetry pitch)
 - Traefik ingress hardening notes for Vault deployment
-- Broader dashboard redesign beyond upload + templated ledger
-- Wire fake Analyze replacement leftovers if circuit-broken mid-bet
+- YNAB-style budgets / envelopes / goals / “give every dollar a job” (after account overview home)
+- Multi-month net-worth history charts beyond the account overview snapshot
+- Category assignment UI for personal budgeting (after overview home)

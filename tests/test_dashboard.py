@@ -173,23 +173,19 @@ class TestPIINoEgress:
 
 
 class TestFinancialPrecision:
-    """Verify that monetary values use integer cents only."""
+    """UI may show USD; reject float-slop with 3+ decimal places."""
 
-    def test_analyze_no_float_in_response(self, client: TestClient) -> None:
-        """Analyze response must not emit floating-point monetary values."""
+    def test_analyze_no_float_slop_in_response(self, client: TestClient) -> None:
+        """Analyze response must not emit $X.YYY float-style amounts."""
         response = client.post(
             "/api/v1/dashboard/analyze",
             data={"question": "Show my balances"},
             headers={"HX-Request": "true"},
         )
-        # The response should not contain floating-point numbers with dollar signs
         import re
 
-        # Match patterns like $123.45 or $123.456
-        dollar_floats = re.findall(r"\$\d+\.\d{2,}", response.text)
-        assert len(dollar_floats) == 0, (
-            f"Floating-point monetary values found: {dollar_floats}"
-        )
+        float_slop = re.findall(r"\$\d[\d,]*\.\d{3,}", response.text)
+        assert float_slop == [], f"Float-slop monetary values found: {float_slop}"
 
 
 # ---------------------------------------------------------------------------
@@ -266,12 +262,11 @@ class TestFrontierAuditButton:
         )
         assert response.status_code == 200
         body = response.text
-        assert "150000" in body
-        assert "4000" in body
+        assert "$1,500.00" in body
+        assert "$40.00" in body
         assert "description" not in body.lower()
         assert "account_mask" not in body
         assert "page_text" not in body
-        assert "$" not in body
 
     def test_frontier_audit_rejects_row_level_group(self, client: TestClient) -> None:
         response = client.post(

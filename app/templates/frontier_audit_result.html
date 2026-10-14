@@ -2,12 +2,12 @@
     <h3>Frontier aggregate audit</h3>
     <p><strong>Group:</strong> {{ group_by }}</p>
     <p><strong>Status:</strong> <span class="status-badge status-ok">Completed</span></p>
-    <p>Totals are integer cents.</p>
+    <p>Totals stored as integer cents; shown as USD.</p>
     <table class="data-table">
         <thead>
             <tr>
                 <th>Metric</th>
-                <th class="amount">Cents</th>
+                <th class="amount">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -17,16 +17,17 @@
             </tr>
             <tr>
                 <td>Deposits</td>
-                <td class="amount">{{ totals.total_deposits_cents }}</td>
+                <td class="amount">{{ totals.total_deposits_cents | usd_cents }}</td>
             </tr>
             <tr>
                 <td>Purchases</td>
-                <td class="amount">{{ totals.total_purchases_cents }}</td>
+                <td class="amount">{{ totals.total_purchases_cents | usd_cents }}</td>
             </tr>
             <tr>
                 <td>Withdrawals</td>
-                <td class="amount">{{ totals.total_withdrawals_cents }}</td>
+                <td class="amount">{{ totals.total_withdrawals_cents | usd_cents }}</td>
             </tr>
         </tbody>
     </table>
 </div>
+
