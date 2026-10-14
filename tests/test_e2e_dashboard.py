@@ -47,13 +47,9 @@ def test_htmx_dom_swap(page: Page, live_server: str):
     # Check that htmx is loaded
     assert page.evaluate("window.htmx !== undefined")
 
-    # Fill the form
-    page.fill("#question", "Show me my spending")
+    # Refresh latest ledger (templated DB view — empty or populated)
+    page.fill("#question", "Show latest Vault ledger")
+    page.locator("#submit-btn").click()
 
-    # Click analyze button
-    analyze_btn = page.locator("#submit-btn")
-    analyze_btn.click()
-
-    # Wait for the DOM swap - look for analysis result
-    result_div = page.locator(".analysis-result")
-    expect(result_div).to_contain_text("Analysis Result", timeout=5000)
+    result_div = page.locator(".ledger-result")
+    expect(result_div).to_contain_text("Vault Ledger", timeout=5000)

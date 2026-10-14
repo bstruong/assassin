@@ -14,14 +14,14 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture()
-def client():
-    """Provide a FastAPI TestClient with the dashboard router included."""
+def client(postgres_url: str, monkeypatch: pytest.MonkeyPatch):
+    """Provide a FastAPI TestClient with a live Vault database."""
+    monkeypatch.setenv("DATABASE_URL", postgres_url)
     from app.api.app import create_app
-    from app.api.dashboard import router as dashboard_router
+    from app.db.connection import init_db
 
-    app = create_app()
-    app.include_router(dashboard_router)
-    return TestClient(app)
+    init_db()
+    return TestClient(create_app())
 
 
 # ---------------------------------------------------------------------------
@@ -38,8 +38,12 @@ class TestDashboardPage:
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
         assert "ASSASSIN" in response.text
-        assert "The AI Analyst" in response.text
+        assert (
+            "Upload &amp; actions" in response.text
+            or "Upload & actions" in response.text
+        )
         assert "The Local Vault" in response.text
+        assert "Upload to Vault" in response.text
 
     def test_dashboard_contains_htmx_attributes(self, client: TestClient) -> None:
         """Dashboard HTML must include HTMX attributes for interactivity."""
@@ -70,7 +74,7 @@ class TestAnalyzeEndpoint:
         )
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
-        # Should contain a placeholder or analysis result
+        assert "Vault Ledger" in response.text
         assert len(response.text) > 0
 
     def test_analyze_valid_question_with_cents_amount(self, client: TestClient) -> None:
@@ -225,7 +229,7 @@ class TestFrontierAuditButton:
             "Verify & Analyze with Frontier Model" in html
         )
         assert "htmx:beforeSwap" in html
-        assert 'xhr.responseURL.indexOf("/api/v1/dashboard/frontier-audit")' in html
+        assert 'url.indexOf("/api/v1/dashboard/frontier-audit")' in html
         assert "event.detail.shouldSwap = true" in html
 
     def test_frontier_audit_renders_integer_cents(

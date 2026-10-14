@@ -14,19 +14,26 @@ Playwright E2E; do not gate PRs on dashboard mutation kill rates.
 from __future__ import annotations
 
 import logging
+import tempfile
 from pathlib import Path
+from typing import Annotated, Any
+from uuid import UUID
 
-from fastapi import APIRouter, Form, HTTPException, Request, status
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from app.db.connection import get_db_connection
+from app.db.repository import (
+    get_canonical_statement,
+    get_run_statements,
+    get_statement_holdings,
+    list_recent_statements,
+)
 from app.mcp.cloud_tools import CloudToolError, get_financial_summary
+from app.pipeline.ingest_service import IngestFailure, IngestSuccess, ingest_pdf_path
 
 logger = logging.getLogger("app.api.dashboard")
-
-# ---------------------------------------------------------------------------
-# Template setup
-# ---------------------------------------------------------------------------
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -35,16 +42,8 @@ env = Environment(
     autoescape=select_autoescape(enabled_extensions=["html"]),
 )
 
-# ---------------------------------------------------------------------------
-# Router
-# ---------------------------------------------------------------------------
-
 router = APIRouter()
-
-
-# ---------------------------------------------------------------------------
-# Template rendering helpers
-# ---------------------------------------------------------------------------
+dashboard_api = APIRouter(prefix="/api/v1/dashboard")
 
 
 def _render_dashboard() -> str:
@@ -52,18 +51,110 @@ def _render_dashboard() -> str:
     return env.get_template("dashboard.html").render()
 
 
-# ---------------------------------------------------------------------------
-# Route Handlers
-# ---------------------------------------------------------------------------
+def _ledger_blocks_for_run(run_id: UUID) -> list[dict[str, Any]]:
+    """Build templated ledger dicts for every statement on a run."""
+    blocks: list[dict[str, Any]] = []
+    with get_db_connection() as conn:
+        for account, statement, _txn_count in get_run_statements(conn, run_id):
+            loaded = get_canonical_statement(conn, statement.statement_id)
+            if loaded is None:
+                continue
+            _stmt, _summary, transactions = loaded
+            holdings = get_statement_holdings(conn, statement.statement_id)
+            blocks.append(
+                {
+                    "institution": account.institution,
+                    "account_type": account.account_type.value,
+                    "account_mask": account.account_mask,
+                    "start_date": statement.statement_start_date.isoformat(),
+                    "end_date": statement.statement_end_date.isoformat(),
+                    "opening_balance_cents": statement.opening_balance_cents,
+                    "closing_balance_cents": statement.closing_balance_cents,
+                    "transactions": [
+                        {
+                            "post_date": txn.post_date.isoformat(),
+                            "category": txn.transaction_category.value,
+                            "description": txn.description,
+                            "amount_cents": txn.amount_cents,
+                        }
+                        for txn in transactions
+                    ],
+                    "holdings": [
+                        {
+                            "symbol": holding.symbol,
+                            "description": holding.description,
+                            "quantity_nanos": holding.quantity_nanos,
+                            "market_value_cents": holding.market_value_cents,
+                        }
+                        for holding in holdings
+                    ],
+                }
+            )
+    return blocks
+
+
+def _ledger_blocks_recent(*, limit: int = 5) -> list[dict[str, Any]]:
+    """Build templated ledger dicts for the newest statements."""
+    blocks: list[dict[str, Any]] = []
+    with get_db_connection() as conn:
+        recent = list_recent_statements(conn, limit=limit)
+        for account, statement, _txn_count in recent:
+            loaded = get_canonical_statement(conn, statement.statement_id)
+            if loaded is None:
+                continue
+            _stmt, _summary, transactions = loaded
+            holdings = get_statement_holdings(conn, statement.statement_id)
+            blocks.append(
+                {
+                    "institution": account.institution,
+                    "account_type": account.account_type.value,
+                    "account_mask": account.account_mask,
+                    "start_date": statement.statement_start_date.isoformat(),
+                    "end_date": statement.statement_end_date.isoformat(),
+                    "opening_balance_cents": statement.opening_balance_cents,
+                    "closing_balance_cents": statement.closing_balance_cents,
+                    "transactions": [
+                        {
+                            "post_date": txn.post_date.isoformat(),
+                            "category": txn.transaction_category.value,
+                            "description": txn.description,
+                            "amount_cents": txn.amount_cents,
+                        }
+                        for txn in transactions
+                    ],
+                    "holdings": [
+                        {
+                            "symbol": holding.symbol,
+                            "description": holding.description,
+                            "quantity_nanos": holding.quantity_nanos,
+                            "market_value_cents": holding.market_value_cents,
+                        }
+                        for holding in holdings
+                    ],
+                }
+            )
+    return blocks
+
+
+def _render_ledger_html(
+    *,
+    ledgers: list[dict[str, Any]],
+    run_id: UUID | None = None,
+    adapter_id: str | None = None,
+) -> str:
+    if not ledgers:
+        return env.get_template("ledger_empty.html").render()
+    return env.get_template("ledger_result.html").render(
+        ledgers=ledgers,
+        run_id=str(run_id) if run_id else None,
+        adapter_id=adapter_id or "",
+    )
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
 def serve_dashboard() -> HTMLResponse:
     """Serve the main HTMX dashboard page."""
     return HTMLResponse(content=_render_dashboard())
-
-
-dashboard_api = APIRouter(prefix="/api/v1/dashboard")
 
 
 @dashboard_api.post(
@@ -77,13 +168,11 @@ async def analyze_question(
     request: Request,
     question: str = Form(""),
 ) -> HTMLResponse:
-    """Process a financial question and return an HTML analysis fragment.
+    """Return templated latest Vault ledger (question kept for HTMX form compat).
 
-    Validates:
-    - HX-Request header must be present (HTMX-first).
-    - Question must be non-empty and non-whitespace.
+    Validates HTMX and non-empty question, then renders DB-backed ledger rows —
+    never hardcoded fake metrics.
     """
-    # HTMX enforcement
     hx_request = request.headers.get("HX-Request", "").lower()
     if hx_request != "true":
         raise HTTPException(
@@ -91,7 +180,6 @@ async def analyze_question(
             detail="This endpoint requires an HTMX request (HX-Request: true).",
         )
 
-    # Strict validation: reject empty / whitespace-only questions
     stripped = question.strip() if question else ""
     if not stripped:
         raise HTTPException(
@@ -100,13 +188,117 @@ async def analyze_question(
         )
 
     logger.info(
-        "Dashboard analysis request",
+        "Dashboard ledger request",
         extra={"question_length": len(stripped)},
     )
 
-    # Render analysis result from template
-    result_html = env.get_template("analysis_result.html").render(question=stripped)
-    return HTMLResponse(content=result_html)
+    try:
+        ledgers = _ledger_blocks_recent(limit=5)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Dashboard ledger query failed",
+            extra={"error_type": type(exc).__name__},
+        )
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="LEDGER_QUERY_FAILED",
+                detail="Could not load statements from the Vault database.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return HTMLResponse(content=_render_ledger_html(ledgers=ledgers))
+
+
+@dashboard_api.post(
+    "/upload",
+    response_class=HTMLResponse,
+    responses={
+        400: {"description": "Invalid upload or missing HTMX header"},
+    },
+)
+async def upload_statement_html(
+    request: Request,
+    file: Annotated[UploadFile | None, File()] = None,
+) -> HTMLResponse:
+    """Ingest a PDF via the dashboard and swap a templated ledger into Pane 2."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+
+    if file is None or not file.filename:
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="MISSING_FILE",
+                detail="Choose a PDF statement to upload.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not file.filename.lower().endswith(".pdf"):
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="INVALID_FILE",
+                detail="Only PDF documents are supported for ingestion.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    content = await file.read()
+    if not content:
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="EMPTY_FILE",
+                detail="Uploaded file payload is empty.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    if not content.startswith(b"%PDF"):
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="INVALID_PDF",
+                detail="Uploaded file is not a valid PDF binary.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    safe_basename = Path(file.filename).name
+    logger.info(
+        "Dashboard statement upload",
+        extra={"original_basename": safe_basename, "byte_length": len(content)},
+    )
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+        tmp.write(content)
+
+    try:
+        result = ingest_pdf_path(tmp_path, safe_basename)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+    if isinstance(result, IngestFailure):
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code=result.error_code,
+                detail=result.detail,
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    assert isinstance(result, IngestSuccess)
+    ledgers = _ledger_blocks_for_run(result.run_id)
+    return HTMLResponse(
+        content=_render_ledger_html(
+            ledgers=ledgers,
+            run_id=result.run_id,
+            adapter_id=result.adapter_id,
+        )
+    )
 
 
 @dashboard_api.get(

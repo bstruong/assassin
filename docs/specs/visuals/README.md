@@ -30,3 +30,4 @@ Shape Up intentionally avoids high-fidelity pixel comps as a gating artifact. Pr
 | File | Surface |
 |------|---------|
 | [dashboard_baseline_wireframe.html](dashboard_baseline_wireframe.html) | Current Vault dashboard (dual pane: ask + results / frontier verify) |
+| [statements_in_browser_wireframe.html](statements_in_browser_wireframe.html) | **Proposed** — PDF upload + templated DB ledger (statements-in-browser bet) |

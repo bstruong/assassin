@@ -79,11 +79,14 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ),
 ]
 
+# Require a keyword word-boundary so UUID hex like ``8fee…`` is never treated
+# as ``fee`` + digits (which previously corrupted ``run_id`` in JSON responses).
 _MONEY_FIELD_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "MONEY_FIELD",
         re.compile(
-            r"((?:amount|balance|payment|charge|fee|total)\s*[:=]?\s*)(?:\$)?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)",
+            r"(\b(?:amount|balance|payment|charge|fee|total)\b\s*[:=]?\s*)"
+            r"(?:\$)?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)",
             re.IGNORECASE,
         ),
     ),
@@ -94,6 +97,25 @@ _MONEY_KEY_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Canonical UUID string (with or without hyphens) — never apply PII/money regexes.
+_UUID_RE = re.compile(
+    r"^(?:urn:uuid:)?\{?"
+    r"[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}"
+    r"\}?$"
+)
+
+_ID_KEYS = frozenset(
+    {
+        "run_id",
+        "raw_payload_id",
+        "account_id",
+        "statement_id",
+        "holding_id",
+        "transaction_id",
+        "document_id",
+    }
+)
+
 
 def _is_frontier_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in _FRONTIER_PATH_PREFIXES)
@@ -102,6 +124,9 @@ def _is_frontier_path(path: str) -> bool:
 def _redact_text(text: str) -> str:
     """Redact all known PII patterns from a text string."""
     if not isinstance(text, str):
+        return text
+    # Identity / correlation IDs must pass through unchanged.
+    if _UUID_RE.match(text.strip()):
         return text
 
     for pattern_name, pattern in _PATTERNS:
@@ -141,6 +166,8 @@ def _redact_value(
     """Recursively redact PII from a value (string, dict, list, or primitive)."""
     if scrub_row_pii and key and isinstance(key, str) and key.lower() in _ROW_PII_KEYS:
         return "[REDACTED]"
+    if key and isinstance(key, str) and key.lower() in _ID_KEYS:
+        return value
     if (
         key
         and isinstance(key, str)

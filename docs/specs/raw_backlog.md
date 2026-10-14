@@ -6,8 +6,9 @@ To schedule work: shape a pitch from [`PITCH_TEMPLATE.md`](PITCH_TEMPLATE.md), t
 
 ---
 
-- Additional depository / card institution adapters beyond current fixtures
+- Additional depository / card institution adapters beyond the first locked institution (see statements-in-browser bet)
 - Synthetic PDF fixtures (beyond JSON token fixtures) for layout-hard statements
 - Full Grafana Tempo / Prometheus / Loki dashboards beyond collector smoke (depends on Watchtower telemetry pitch)
 - Traefik ingress hardening notes for Vault deployment
-- Proposed (not baseline) dashboard redesign wireframes for a future UI pitch
+- Broader dashboard redesign beyond upload + templated ledger
+- Wire fake Analyze replacement leftovers if circuit-broken mid-bet

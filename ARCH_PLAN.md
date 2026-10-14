@@ -36,8 +36,8 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 | **Cycle id** | `cycle-2026-w42` |
 | **Mode** | Cloud-Build |
 | **Appetite budget** | Small Batch (default 2 weeks); Big Batch only if a pitch says so |
-| **In-bet pitches** | _None — awaiting next PM bet_ |
-| **Hill status** | _n/a_ |
+| **In-bet pitches** | [Statements in the browser](docs/specs/pitch_statements_in_browser.md) |
+| **Hill status** | Downhill — upload + DB ledger shipped in-branch; Chase adapter + Schwab fixture path green |
 
 **Hill language:** *uphill* = unknowns still being resolved; *downhill* = known work being executed.
 
@@ -49,7 +49,7 @@ Shaped candidates for the **next** bet. Listing here is **not** a commitment.
 
 | Pitch | Appetite | Summary | Status |
 |-------|----------|---------|--------|
-| [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — ready to bet |
+| [Watchtower telemetry path](docs/specs/pitch_watchtower_telemetry.md) | Small Batch (2 weeks) | Verifiable OTel → collector smoke path for Watchtower; no SaaS APM | Shaped — deferred (not on critical path to personal statements UI) |
 
 Unshaped one-liners live in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md).
 

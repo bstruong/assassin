@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 import tempfile
-from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
@@ -18,8 +17,7 @@ from uuid import UUID
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 
-from app.adapters.base import CombinedStatementAdapter
-from app.adapters.registry import AdapterRegistryError, get_default_registry
+from app.adapters.registry import get_default_registry
 from app.api.schemas import (
     AccountSummaryResponse,
     ExtractionRunDetailResponse,
@@ -28,25 +26,14 @@ from app.api.schemas import (
     IngestSuccessResponse,
 )
 from app.db.connection import get_db_connection
-from app.db.repository import (
-    get_extraction_run,
-    get_run_statements,
-    persist_canonical_statement,
-    persist_raw_extraction,
-    persist_raw_payload,
-    update_run_status,
+from app.db.repository import get_extraction_run, get_run_statements
+from app.models.enums import (
+    AccountDomain,
+    AccountType,
+    CurrencyCode,
+    RunStatus,
 )
-from app.extraction.core import extract_pdf_to_raw
-from app.models.enums import RunStatus
-from app.models.exceptions import (
-    AmbiguousAccountsError,
-    InvariantError,
-    MissingSectionError,
-    PersistenceError,
-    SchemaDriftError,
-    TokenError,
-)
-from app.models.raw import RawExtraction
+from app.pipeline.ingest_service import IngestFailure, IngestSuccess, ingest_pdf_path
 
 logger = logging.getLogger("app.api.ingest")
 router = APIRouter(prefix="/api/v1")
@@ -121,153 +108,49 @@ async def upload_statement(
         tmp.write(content)
 
     try:
-        # 1. Match adapter exclusively
-        registry = get_default_registry()
-        try:
-            adapter = registry.match(tmp_path)
-        except AdapterRegistryError as exc:
-            logger.warning(
-                "Adapter registry matching failed",
-                extra={"error_type": type(exc).__name__},
-            )
+        result = ingest_pdf_path(tmp_path, safe_basename)
+        if isinstance(result, IngestFailure):
             return JSONResponse(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                status_code=result.http_status,
                 content=IngestErrorResponse(
                     status="failed",
-                    error_code="ADAPTER_MATCH_FAILED",
-                    detail=str(exc),
+                    run_id=result.run_id,
+                    raw_payload_id=result.raw_payload_id,
+                    adapter_id=result.adapter_id,
+                    error_code=result.error_code,
+                    detail=result.detail,
                 ).model_dump(mode="json"),
             )
 
-        # 2. Extract raw pages and tokens
-        try:
-            raw_extraction = extract_pdf_to_raw(
-                file_path=tmp_path,
-                adapter_id=adapter.adapter_id,
-                adapter_version=adapter.adapter_version,
-                original_basename=safe_basename,
+        assert isinstance(result, IngestSuccess)
+        accounts_summary = [
+            AccountSummaryResponse(
+                account_id=account_id,
+                institution=institution,
+                account_mask=mask,
+                account_domain=AccountDomain(domain),
+                account_type=AccountType(account_type),
+                currency=CurrencyCode(currency),
             )
-        except (ValueError, FileNotFoundError) as exc:
-            logger.error(
-                "Raw page and token extraction failed",
-                extra={"error_type": type(exc).__name__},
-            )
-            return JSONResponse(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                content=IngestErrorResponse(
-                    status="failed",
-                    error_code="EXTRACTION_FAILED",
-                    detail=str(exc),
-                ).model_dump(mode="json"),
-            )
-
-        # 3. Store raw append-only extraction in database
-        with get_db_connection() as conn:
-            actual_payload_id = persist_raw_payload(conn, raw_extraction.payload)
-            if raw_extraction.payload.raw_payload_id != actual_payload_id:
-                raw_extraction = RawExtraction(
-                    payload=raw_extraction.payload.model_copy(
-                        update={"raw_payload_id": actual_payload_id}
-                    ),
-                    run=raw_extraction.run.model_copy(
-                        update={"raw_payload_id": actual_payload_id}
-                    ),
-                    pages=raw_extraction.pages,
-                )
-            persist_raw_extraction(conn, raw_extraction)
-
-        run_id = raw_extraction.run.run_id
-
-        # 4. Parse canonical financial model(s)
-        try:
-            parsed = adapter.parse_canonical(raw_extraction)
-            if isinstance(adapter, CombinedStatementAdapter):
-                bundles: Sequence[tuple] = parsed  # type: ignore[assignment]
-            else:
-                bundles = [parsed]  # type: ignore[list-item]
-
-            # 5. Persist canonical statements and sidecars
-            with get_db_connection() as conn:
-                for bundle in bundles:
-                    acc, stmt, summary, txns = bundle[:4]
-                    holdings = bundle[4] if len(bundle) > 4 else ()
-                    persist_canonical_statement(
-                        conn, acc, stmt, summary, txns, holdings=holdings
-                    )
-                update_run_status(conn, run_id, RunStatus.CANONICAL_PERSISTED)
-
-            logger.info(
-                "Statement successfully ingested and persisted",
-                extra={
-                    "run_id": str(run_id),
-                    "adapter_id": adapter.adapter_id,
-                    "statements_count": len(bundles),
-                },
-            )
-
-            accounts_summary = [
-                AccountSummaryResponse(
-                    account_id=acc.account_id,
-                    institution=acc.institution,
-                    account_mask=acc.account_mask,
-                    account_domain=acc.account_domain,
-                    account_type=acc.account_type,
-                    currency=acc.currency,
-                )
-                for acc, *_rest in bundles
-            ]
-
-            total_txns = sum(len(bundle[3]) for bundle in bundles)
-            return IngestSuccessResponse(
-                status=RunStatus.CANONICAL_PERSISTED,
-                run_id=run_id,
-                raw_payload_id=actual_payload_id,
-                adapter_id=adapter.adapter_id,
-                adapter_version=adapter.adapter_version,
-                statements_count=len(bundles),
-                transactions_count=total_txns,
-                accounts=accounts_summary,
-            )
-
-        except (
-            InvariantError,
-            MissingSectionError,
-            AmbiguousAccountsError,
-            SchemaDriftError,
-            TokenError,
-            PersistenceError,
-            ValueError,
-        ) as exc:
-            logger.error(
-                "Statement processing failed invariant/schema contract",
-                extra={
-                    "run_id": str(run_id),
-                    "adapter_id": adapter.adapter_id,
-                    "error_type": type(exc).__name__,
-                },
-            )
-            # Record failed extraction run in DB
-            with get_db_connection() as conn:
-                update_run_status(
-                    conn,
-                    run_id,
-                    RunStatus.FAILED,
-                    error_code=type(exc).__name__,
-                    error_message=str(exc),
-                )
-
-            return JSONResponse(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                content=IngestErrorResponse(
-                    status="failed",
-                    run_id=run_id,
-                    raw_payload_id=actual_payload_id,
-                    adapter_id=adapter.adapter_id,
-                    error_code=type(exc).__name__,
-                    detail=str(exc),
-                ).model_dump(mode="json"),
-            )
-
+            for (
+                account_id,
+                institution,
+                mask,
+                domain,
+                account_type,
+                currency,
+            ) in result.accounts
+        ]
+        return IngestSuccessResponse(
+            status=RunStatus.CANONICAL_PERSISTED,
+            run_id=result.run_id,
+            raw_payload_id=result.raw_payload_id,
+            adapter_id=result.adapter_id,
+            adapter_version=result.adapter_version,
+            statements_count=result.statements_count,
+            transactions_count=result.transactions_count,
+            accounts=accounts_summary,
+        )
     finally:
         if tmp_path.exists():
             tmp_path.unlink()

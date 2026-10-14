@@ -13,6 +13,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from app.adapters.base import StatementAdapter
+from app.adapters.chase import ChaseDepositoryAdapter
 from app.adapters.combined import StandardCombinedDepositoryAdapter
 from app.adapters.credit_card import StandardCreditCardAdapter
 from app.adapters.depository import StandardDepositoryAdapter
@@ -177,6 +178,7 @@ def get_default_registry() -> AdapterRegistry:
     return AdapterRegistry(
         adapters=[
             StandardDepositoryAdapter(),
+            ChaseDepositoryAdapter(),
             StandardCreditCardAdapter(),
             SchwabAdapter(),
             VanguardAdapter(),

@@ -754,6 +754,49 @@ def get_canonical_statement(
         return statement, summary, txns
 
 
+def list_recent_statements(
+    conn: psycopg.Connection, *, limit: int = 5
+) -> list[tuple[Account, CanonicalStatement, int]]:
+    """Return newest statements with account headers and transaction counts."""
+    if limit < 1:
+        raise PersistenceError("list_recent_statements limit must be >= 1")
+    query = """
+    SELECT a.account_id, a.institution, a.account_mask, a.account_domain, a.account_type, a.currency,
+           s.statement_id, s.run_id, s.raw_payload_id, s.statement_start_date, s.statement_end_date,
+           s.opening_balance_cents, s.closing_balance_cents, s.net_change_cents,
+           (SELECT COUNT(*) FROM transactions t WHERE t.statement_id = s.statement_id) AS txn_count
+    FROM statements s
+    JOIN accounts a ON s.account_id = a.account_id
+    ORDER BY s.statement_end_date DESC, s.statement_id DESC
+    LIMIT %s;
+    """
+    results: list[tuple[Account, CanonicalStatement, int]] = []
+    with conn.cursor() as cur:
+        cur.execute(query, (limit,))
+        for r in cur.fetchall():
+            acc = Account(
+                account_id=UUID(str(r[0])),
+                institution=str(r[1]),
+                account_mask=str(r[2]),
+                account_domain=AccountDomain(str(r[3])),
+                account_type=AccountType(str(r[4])),
+                currency=CurrencyCode(str(r[5])),
+            )
+            stmt = CanonicalStatement(
+                statement_id=UUID(str(r[6])),
+                account_id=UUID(str(r[0])),
+                run_id=UUID(str(r[7])),
+                raw_payload_id=UUID(str(r[8])),
+                statement_start_date=r[9],
+                statement_end_date=r[10],
+                opening_balance_cents=int(r[11]),
+                closing_balance_cents=int(r[12]),
+                net_change_cents=int(r[13]),
+            )
+            results.append((acc, stmt, int(r[14])))
+    return results
+
+
 def get_statement_holdings(
     conn: psycopg.Connection, statement_id: UUID
 ) -> list[Holding]:
