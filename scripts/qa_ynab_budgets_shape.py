@@ -55,7 +55,11 @@ def main() -> int:
         failures += 1
 
     wire_text = wire.read_text(encoding="utf-8") if wire.is_file() else ""
-    for needle in ("Ready to Assign", "SYNTHETIC Groceries", "ASSIGN_EXCEEDS_AVAILABLE"):
+    for needle in (
+        "Ready to Assign",
+        "SYNTHETIC Groceries",
+        "ASSIGN_EXCEEDS_AVAILABLE",
+    ):
         if needle in wire_text:
             _pass(f"wireframe contains `{needle}`")
         else:
@@ -63,7 +67,10 @@ def main() -> int:
             failures += 1
 
     arch_text = arch.read_text(encoding="utf-8") if arch.is_file() else ""
-    if "GitHub Project" in arch_text and "migrate_shape_up_github_project.sh" in arch_text:
+    if (
+        "GitHub Project" in arch_text
+        and "migrate_shape_up_github_project.sh" in arch_text
+    ):
         _pass("ARCH_PLAN points at GitHub Project + migrate script")
     else:
         _fail("ARCH_PLAN missing GitHub Project pointer")

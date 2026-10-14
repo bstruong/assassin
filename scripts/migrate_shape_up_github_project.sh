@@ -30,6 +30,7 @@ if [[ "$OWNER" == "@me" ]]; then
 else
   OWNER_LOGIN="$OWNER"
 fi
+OWNER="$OWNER_LOGIN"
 echo "    owner login: $OWNER_LOGIN"
 
 echo "==> Locate or create project: $TITLE"
@@ -132,17 +133,25 @@ set_select() {
 set_text() {
   local item_id="$1" field_id="$2" text="$3"
   [[ -n "$field_id" && "$field_id" != "null" ]] || return 0
+  [[ -n "$text" ]] || return 0
   gh project item-edit --id "$item_id" --project-id "$PROJECT_ID" \
     --field-id "$field_id" --text "$text" >/dev/null
 }
 
+echo "==> Fetch existing items"
+EXISTING_ITEMS="$(gh project item-list "$NUMBER" --owner "$OWNER" --limit 100 --format json 2>/dev/null || echo '{"items":[]}')"
+
 add_item() {
   local title="$1" body="$2" lane="$3" appetite="$4" pitch="$5"
   echo "    + $title [$lane]"
-  local item_json item_id
-  item_json="$(gh project item-create "$NUMBER" --owner "$OWNER" \
-    --title "$title" --body "$body" --format json)"
-  item_id="$(echo "$item_json" | jq -r '.id')"
+  local item_id
+  item_id="$(echo "$EXISTING_ITEMS" | jq -r --arg t "$title" '.items[]? | select(.title == $t) | .id' | head -n1)"
+  if [[ -z "$item_id" || "$item_id" == "null" ]]; then
+    local item_json
+    item_json="$(gh project item-create "$NUMBER" --owner "$OWNER" \
+      --title "$title" --body "$body" --format json)"
+    item_id="$(echo "$item_json" | jq -r '.id')"
+  fi
   set_select "$item_id" "$LANE_FIELD" "$(option_id Lane "$lane")"
   set_select "$item_id" "$APPETITE_FIELD" "$(option_id Appetite "$appetite")"
   set_text "$item_id" "$CYCLE_FIELD" "$CYCLE"
