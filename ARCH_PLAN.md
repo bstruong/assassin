@@ -8,17 +8,21 @@ The Shape Up **betting table / in-bet / shipped / cool-down / raw** board lives 
 
 | Field | Value |
 |-------|--------|
-| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects/5) |
-| **Visibility** | **Private** |
+| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects/5) (`PVT_kwHOAujBHc4Bm78V`, #5) |
+| **Visibility** | **Private** (`public: false`) |
 | **Owner** | `@bstruong` (personal Projects) |
-| **Primary view** | **Board** by **Lane** (Table optional for betting; avoid Roadmap) |
-| **Lane field** | Raw \| Shaped \| In-bet \| Shipped \| Circuit-broken \| Cool-down \| Deferred |
+| **Linked repo** | [bstruong/assassin](https://github.com/bstruong/assassin) |
+| **Primary view** | **Board by Lane** (not Roadmap); Table optional for betting |
+| **Fields** | Lane · Appetite · Cycle · Pitch path |
+| **Cycle** | `cycle-2026-w42` |
 
-Re-seed / refresh fields+items: `bash scripts/migrate_shape_up_github_project.sh` (owner workstation; cloud bot cannot access private Projects).
+**Verified snapshot (2026-10-14):** Raw 6 · Shaped 1 (YNAB budgets / envelopes) · In-bet 0 · Shipped 9 · Deferred 1 (Watchtower) · Cool-down 4 · Circuit-broken 0.
+
+Re-seed / refresh: `bash scripts/migrate_shape_up_github_project.sh` (owner workstation). Cloud `cursor[bot]` cannot read/write this private user Project without a user PAT (`GH_PROJECT_PAT`).
 
 Pitches and wireframes stay in-repo under [`docs/specs/`](docs/specs/). Architecture contracts stay in [`docs/architecture/`](docs/architecture/). Do **not** append undated “Phase N” checklists to `system_design.md`.
 
-**Agents:** treat [projects/5](https://github.com/users/bstruong/projects/5) as board SoT when the PM grants access; until then, keep pitch markdown + this pointer in git. Do not reintroduce a second live board table in this file.
+**Agents:** [projects/5](https://github.com/users/bstruong/projects/5) is board SoT. Keep pitch markdown in git; do not reintroduce a second live board table in this file.
 
 ---
 
