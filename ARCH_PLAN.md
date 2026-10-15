@@ -64,6 +64,8 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 
 One-liners may still be sketched in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md) before they become Project items; the Project wins when they disagree.
 
+Shipped / cool-down / deferred items (including Account overview home [#50](https://github.com/bstruong/assassin/pull/50)) live on [Project #5](https://github.com/users/bstruong/projects/5)—not as a second table in this file.
+
 ---
 
 ## Migrate / refresh the Project

@@ -1,6 +1,6 @@
 # Pitch: Account overview home
 
-**Status:** Bet  
+**Status:** Shipped  
 **Builder:** Cloud agent (Cloud-Build Mode)  
 **Bettor:** Human PM  
 **Appetite:** Small Batch (2 weeks)  
@@ -69,8 +69,8 @@ flowchart LR
 - [x] `uv run python scripts/qa_account_overview.py` — happy: seeded DB → overview on dashboard load with integer-cent fields; empty DB → empty state; drill-in shows transactions; negative: fail-loud on bad request/id
 - [x] Manual UI QA documented below (matches proposed wireframe)
 - [x] Proposed wireframe linked
-- [ ] Core invariants: integer cents, fail-loud, no PII/amount logging
-- [ ] CI gates green; `ARCH_PLAN.md` archive or circuit-break note
+- [x] Core invariants: integer cents, fail-loud, no PII/amount logging
+- [x] CI gates green; archived after merge (#50)
 
 ## Manual UI QA
 
