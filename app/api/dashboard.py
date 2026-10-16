@@ -23,6 +23,12 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, s
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from app.budget.envelopes import (
+    assign_to_envelope,
+    create_envelope,
+    list_envelopes,
+    ready_to_assign_cents,
+)
 from app.db.connection import get_db_connection
 from app.db.repository import (
     get_canonical_statement,
@@ -31,9 +37,11 @@ from app.db.repository import (
     list_recent_statements,
 )
 from app.mcp.cloud_tools import CloudToolError, get_financial_summary
+from app.models.exceptions import AssignExceedsAvailableError, TokenError
 from app.pipeline.ingest_service import IngestFailure, IngestSuccess, ingest_pdf_path
 from app.presentation.label_format import format_snake_label
 from app.presentation.money_format import format_usd_cents
+from app.presentation.usd_parse import parse_usd_form_to_cents
 
 logger = logging.getLogger("app.api.dashboard")
 
@@ -100,10 +108,51 @@ def _render_overview_html() -> str:
     )
 
 
+def _render_budget_html() -> str:
+    """Templated Budget pane: Ready to Assign + envelopes (integer cents → USD)."""
+    try:
+        with get_db_connection() as conn:
+            available = ready_to_assign_cents(conn)
+            envelopes = list_envelopes(conn)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Dashboard budget query failed",
+            extra={"error_type": type(exc).__name__},
+        )
+        return env.get_template("upload_error.html").render(
+            error_code="BUDGET_QUERY_FAILED",
+            detail="Could not load budget envelopes from the Vault database.",
+        )
+    return env.get_template("budget_result.html").render(
+        ready_to_assign_cents=available,
+        envelopes=[
+            {
+                "envelope_id": str(item.envelope_id),
+                "name": item.name,
+                "balance_cents": item.balance_cents,
+            }
+            for item in envelopes
+        ],
+    )
+
+
 def _render_dashboard() -> str:
     """Render the main dashboard HTML with Pane 2 prepopulated from Vault."""
+    assign_options: list[dict[str, str]] = []
+    try:
+        with get_db_connection() as conn:
+            assign_options = [
+                {"envelope_id": str(item.envelope_id), "name": item.name}
+                for item in list_envelopes(conn)
+            ]
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Dashboard envelope list for assign form failed",
+            extra={"error_type": type(exc).__name__},
+        )
     return env.get_template("dashboard.html").render(
-        vault_pane_html=_render_overview_html()
+        vault_pane_html=_render_overview_html(),
+        assign_envelopes=assign_options,
     )
 
 
@@ -234,6 +283,129 @@ async def get_account_overview(request: Request) -> HTMLResponse:
         else status.HTTP_200_OK
     )
     return HTMLResponse(content=html, status_code=status_code)
+
+
+@dashboard_api.get(
+    "/budget",
+    response_class=HTMLResponse,
+    responses={400: {"description": "Requires HTMX or budget query failed"}},
+)
+async def get_budget(request: Request) -> HTMLResponse:
+    """Return the Budget / envelopes HTML fragment for Pane 2."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+    logger.info("Dashboard budget pane requested", extra={"surface": "budget"})
+    html = _render_budget_html()
+    status_code = (
+        status.HTTP_400_BAD_REQUEST
+        if "BUDGET_QUERY_FAILED" in html
+        else status.HTTP_200_OK
+    )
+    return HTMLResponse(content=html, status_code=status_code)
+
+
+@dashboard_api.post(
+    "/budget/assign",
+    response_class=HTMLResponse,
+    responses={400: {"description": "Over-assign, invalid amount, or missing HTMX"}},
+)
+async def post_budget_assign(
+    request: Request,
+    envelope_id: Annotated[str, Form()],
+    amount_usd: Annotated[str, Form()],
+) -> HTMLResponse:
+    """Assign USD form amount into an envelope; return Budget fragment."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+
+    try:
+        parsed_id = UUID(envelope_id.strip())
+        amount_cents = parse_usd_form_to_cents(amount_usd)
+    except (TokenError, ValueError) as exc:
+        logger.warning(
+            "Budget assign rejected invalid input",
+            extra={"error_type": type(exc).__name__},
+        )
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="INVALID_AMOUNT",
+                detail="Amount must be positive USD with exactly two decimal digits.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        with get_db_connection() as conn:
+            assign_to_envelope(
+                conn,
+                envelope_id=parsed_id,
+                amount_cents=amount_cents,
+            )
+    except AssignExceedsAvailableError:
+        logger.warning(
+            "Budget assign exceeded Ready to Assign",
+            extra={"envelope_id": str(parsed_id)},
+        )
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="ASSIGN_EXCEEDS_AVAILABLE",
+                detail="Assign amount exceeds Ready to Assign. No silent clamp.",
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    except TokenError as exc:
+        code = (
+            "ENVELOPE_NOT_FOUND"
+            if "ENVELOPE_NOT_FOUND" in str(exc)
+            else "INVALID_AMOUNT"
+        )
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code=code,
+                detail=str(exc),
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return HTMLResponse(content=_render_budget_html())
+
+
+@dashboard_api.post(
+    "/budget/envelopes",
+    response_class=HTMLResponse,
+    responses={400: {"description": "Blank name or missing HTMX"}},
+)
+async def post_budget_envelope(
+    request: Request,
+    name: Annotated[str, Form()],
+) -> HTMLResponse:
+    """Create a named envelope (thin prerequisite for assign)."""
+    hx_request = request.headers.get("HX-Request", "").lower()
+    if hx_request != "true":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint requires an HTMX request (HX-Request: true).",
+        )
+    try:
+        with get_db_connection() as conn:
+            create_envelope(conn, name=name)
+    except TokenError as exc:
+        return HTMLResponse(
+            content=env.get_template("upload_error.html").render(
+                error_code="INVALID_ENVELOPE_NAME",
+                detail=str(exc),
+            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    return HTMLResponse(content=_render_budget_html())
 
 
 @dashboard_api.get(

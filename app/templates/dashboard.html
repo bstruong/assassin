@@ -97,12 +97,60 @@
                     <button type="submit" id="frontier-verify-btn" class="secondary">Verify &amp; Analyze with Frontier Model</button>
                 </form>
                 <div id="frontier-result"></div>
+                <form id="envelope-create-form"
+                      hx-post="/api/v1/dashboard/budget/envelopes"
+                      hx-swap="innerHTML"
+                      hx-target="#pane-vault-body"
+                      style="margin-top:16px;">
+                    <div class="form-group">
+                        <label for="envelope-name">Create envelope</label>
+                        <input type="text" id="envelope-name" name="name"
+                               placeholder="SYNTHETIC Groceries" required>
+                    </div>
+                    <button type="submit" class="secondary">Create envelope</button>
+                </form>
+                <form id="budget-assign-form"
+                      hx-post="/api/v1/dashboard/budget/assign"
+                      hx-swap="innerHTML"
+                      hx-target="#pane-vault-body"
+                      style="margin-top:16px;">
+                    <div class="form-group">
+                        <label for="assign-envelope">Assign to envelope</label>
+                        <select id="assign-envelope" name="envelope_id" required
+                                style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;color:#c9d1d9;">
+                            {% if assign_envelopes %}
+                            {% for env in assign_envelopes %}
+                            <option value="{{ env.envelope_id }}">{{ env.name }}</option>
+                            {% endfor %}
+                            {% else %}
+                            <option value="" disabled selected>Create an envelope first</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assign-amount">Amount (USD)</label>
+                        <input type="text" id="assign-amount" name="amount_usd"
+                               placeholder="50.00" required>
+                    </div>
+                    <button type="submit" id="assign-btn">Assign</button>
+                </form>
             </div>
         </div>
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Account overview</span>
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">
+                    <button type="button" class="secondary"
+                            style="padding:2px 8px;font-size:0.75rem;margin-right:4px;"
+                            hx-get="/api/v1/dashboard/overview"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML">Overview</button>
+                    <button type="button" class="secondary"
+                            style="padding:2px 8px;font-size:0.75rem;"
+                            hx-get="/api/v1/dashboard/budget"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML">Budget</button>
+                </span>
             </div>
             <div class="pane-body" id="pane-vault-body">
                 {{ vault_pane_html | safe }}
@@ -121,7 +169,8 @@
             var isAnalyze = url.indexOf("/api/v1/dashboard/analyze") !== -1;
             var isStatement = url.indexOf("/api/v1/dashboard/statements/") !== -1;
             var isOverview = url.indexOf("/api/v1/dashboard/overview") !== -1;
-            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview) && xhr.status === 400) {
+            var isBudget = url.indexOf("/api/v1/dashboard/budget") !== -1;
+            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview || isBudget) && xhr.status === 400) {
                 event.detail.shouldSwap = true;
                 event.detail.isError = false;
             }
