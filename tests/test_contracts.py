@@ -31,6 +31,9 @@ from app.models.enums import (
 from app.models.exceptions import (
     AdapterRegistryError,
     AmbiguousAccountsError,
+    InferenceConnectionError,
+    InferenceContractError,
+    InferenceError,
     InvariantError,
     MissingSectionError,
     PipelineError,
@@ -585,6 +588,9 @@ class TestExceptionHierarchy:
         MissingSectionError,
         AmbiguousAccountsError,
         AdapterRegistryError,
+        InferenceError,
+        InferenceConnectionError,
+        InferenceContractError,
     )
 
     def test_pipeline_error_is_exception(self) -> None:
