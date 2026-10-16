@@ -110,7 +110,7 @@ def db_conn(postgres_url: str) -> Iterator[psycopg.Connection]:
         try:
             conn.execute(
                 """
-                TRUNCATE TABLE raw_tokens, raw_pages, transactions,
+                TRUNCATE TABLE envelopes, raw_tokens, raw_pages, transactions,
                                statement_depository_summaries, statement_credit_summaries,
                                statement_brokerage_summaries, statements, accounts,
                                extraction_runs, raw_payloads CASCADE;

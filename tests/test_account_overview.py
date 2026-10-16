@@ -27,7 +27,7 @@ def client(postgres_url: str, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     with psycopg.connect(postgres_url) as conn:
         conn.execute(
             """
-            TRUNCATE TABLE raw_tokens, raw_pages, transactions, holdings,
+            TRUNCATE TABLE envelopes, raw_tokens, raw_pages, transactions, holdings,
                            statement_depository_summaries, statement_credit_summaries,
                            statement_brokerage_summaries, statements, accounts,
                            extraction_runs, raw_payloads CASCADE;

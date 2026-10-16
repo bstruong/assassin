@@ -8,13 +8,15 @@ Hierarchy::
 
     PipelineError (base)
     ├── InvariantError         — balance recon, bucket mismatch
+    │   └── AssignExceedsAvailableError — budget over-assign
     ├── TokenError             — unparseable money, sign contradiction
     ├── SchemaDriftError       — extra / missing headers
     ├── MissingSectionError    — missing mandatory anchors
     ├── AmbiguousAccountsError — multi-account on single adapter
     ├── AdapterRegistryError   — 0 or 2+ adapter matches
-    └── PersistenceError       — relational invariant failure
-        └── MigrationError     — missing, unordered, or tampered migration
+    ├── PersistenceError       — relational invariant failure
+    │   └── MigrationError     — missing, unordered, or tampered migration
+    └── InferenceError         — Vault inference engine failures
 """
 
 from __future__ import annotations
@@ -38,6 +40,13 @@ class InvariantError(PipelineError):
     - Depository / card bucket totals do not equal line sums.
     - Running-balance column is inconsistent with cumulative sum.
     - Any 1-cent mismatch in a recon check.
+    """
+
+
+class AssignExceedsAvailableError(InvariantError):
+    """Assign amount_cents exceeds Ready-to-Assign (no silent clamp).
+
+    Error code for UI / QA: ``ASSIGN_EXCEEDS_AVAILABLE``.
     """
 
 
