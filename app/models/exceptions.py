@@ -120,3 +120,15 @@ class MigrationError(PersistenceError):
     - Version ids are not a contiguous sequence starting at 0001.
     - A recorded checksum does not match the migration file.
     """
+
+
+class InferenceError(PipelineError):
+    """An error occurred during local/Vault model inference."""
+
+
+class InferenceConnectionError(InferenceError):
+    """The Vault inference engine is unreachable, timed out, or connection failed."""
+
+
+class InferenceContractError(InferenceError):
+    """The Vault inference engine returned an invalid status, malformed response, or missing model."""
