@@ -35,7 +35,7 @@ class TestVaultInferenceConfig:
         monkeypatch.delenv("VAULT_INFERENCE_TIMEOUT", raising=False)
 
         client = VaultInferenceClient()
-        assert client.base_url == "http://192.168.1.92:8080/v1"
+        assert client.base_url == "http://ai.watchtower.local/v1"
         assert client.model == "qwen36-coder-hybrid"
         assert client.timeout == 30.0
 
@@ -123,7 +123,7 @@ class TestVaultInferenceModels:
     @patch("app.core.inference.urlopen")
     def test_get_models_http_error(self, mock_urlopen: MagicMock) -> None:
         mock_urlopen.side_effect = HTTPError(
-            url="http://192.168.1.92:8080/v1/models",
+            url="http://ai.watchtower.local/v1/models",
             code=500,
             msg="Internal Server Error",
             hdrs=MagicMock(),
@@ -237,7 +237,7 @@ class TestVaultInferenceChat:
     @patch("app.core.inference.urlopen")
     def test_chat_http_error(self, mock_urlopen: MagicMock) -> None:
         mock_urlopen.side_effect = HTTPError(
-            url="http://192.168.1.92:8080/v1/chat/completions",
+            url="http://ai.watchtower.local/v1/chat/completions",
             code=404,
             msg="Not Found",
             hdrs=MagicMock(),
