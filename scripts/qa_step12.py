@@ -136,7 +136,7 @@ def main() -> None:
         print("\n[1] Dashboard Page Loading")
         status, body = http_get("/dashboard")
         check("Dashboard returns 200", status == 200, f"got {status}")
-        check("Contains 'ASSASSIN'", "ASSASSIN" in body)
+        check("Contains 'SAPPHIRE'", "SAPPHIRE" in body)
         check("Contains 'The AI Analyst'", "The AI Analyst" in body)
         check("Contains 'The Local Vault'", "The Local Vault" in body)
 

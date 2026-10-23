@@ -37,7 +37,7 @@ class TestDashboardPage:
         response = client.get("/dashboard")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
-        assert "ASSASSIN" in response.text
+        assert "SAPPHIRE" in response.text
         assert (
             "Upload &amp; actions" in response.text
             or "Upload & actions" in response.text

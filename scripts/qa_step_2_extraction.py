@@ -70,7 +70,7 @@ def test_schema_drift_detection() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 2 QA Validation: Extraction Core")
+    print("SAPPHIRE Step 2 QA Validation: Extraction Core")
     print("=" * 60)
     test_parse_currency_to_cents()
     test_schema_drift_detection()

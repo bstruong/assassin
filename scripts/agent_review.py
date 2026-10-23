@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Automated Agent-to-Agent Review static analysis and invariant validator.
 
-This script enforces the ASSASSIN core architectural invariants, static AST
+This script enforces the SAPPHIRE core architectural invariants, static AST
 safety rules, test coverage thresholds, and QA deliverable requirements across
 the codebase before pull requests are approved.
 """
@@ -139,7 +139,7 @@ def main() -> int:
     """Execute the full agent-to-agent review suite."""
     root_dir = Path(__file__).resolve().parent.parent
     print("=" * 70)
-    print("🤖 ASSASSIN Autonomous Agent-to-Agent Review Validator")
+    print("🤖 SAPPHIRE Autonomous Agent-to-Agent Review Validator")
     print("=" * 70)
 
     total_failures = 0

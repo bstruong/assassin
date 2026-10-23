@@ -2,7 +2,7 @@
 
 Unshaped ideas only. One line each. **No estimates, no dates, no commitment.**
 
-**Live board:** private GitHub Project **ASSASSIN Shape Up** (see `ARCH_PLAN.md`). Prefer creating Project items (Lane=Raw) when scheduling. This file is a scratch pad; the Project wins on conflict.
+**Live board:** private GitHub Project **SAPPHIRE Shape Up** (see `ARCH_PLAN.md`). Prefer creating Project items (Lane=Raw) when scheduling. This file is a scratch pad; the Project wins on conflict.
 
 To schedule work: shape a pitch from [`PITCH_TEMPLATE.md`](PITCH_TEMPLATE.md), add/update the Project item (Lane=Shaped), then bet.
 

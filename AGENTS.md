@@ -1,6 +1,6 @@
-# ASSASSIN Agent Configuration & Repository Conventions
+# SAPPHIRE Agent Configuration & Repository Conventions
 
-This document serves as the authoritative source of conventions and instructions for all AI agents and contributors operating within the ASSASSIN repository.
+This document serves as the authoritative source of conventions and instructions for all AI agents and contributors operating within the SAPPHIRE repository.
 
 ## Environment & Runtime Commands
 
@@ -41,7 +41,7 @@ Any changes made to the codebase must strictly adhere to these invariants:
 
 
 6. **Shape Up planning + Cloud-Build Mode (temporary):**
-   - Active product work is shaped as **pitches** under `docs/specs/`. The live Shape Up **board** (betting table / in-bet / shipped / raw) is the private GitHub Project **ASSASSIN Shape Up** — see pointer + migrate script in `ARCH_PLAN.md`. Do not turn raw backlog into undated Phase N checklists in `docs/architecture/`.
+   - Active product work is shaped as **pitches** under `docs/specs/`. The live Shape Up **board** (betting table / in-bet / shipped / raw) is the private GitHub Project **SAPPHIRE Shape Up** — see pointer + migrate script in `ARCH_PLAN.md`. Do not turn raw backlog into undated Phase N checklists in `docs/architecture/`.
    - **Cloud-Build Mode (active):** Cloud agents **may** shape pitches **and** implement chosen bets (application code, tests, QA scripts, PRs). Local Tier-1 / `pi-up.sh` is **not** required while this mode is active.
    - When Cloud-Build Mode is explicitly revoked, restore the prior rule: cloud agents plan/review/CI only; Tier-1 local harness implements.
    - TDD, coverage ≥90%, financial precision, fail-loud contracts, and zero PII/amount logging still gate every bet—Cloud-Build does not relax those invariants.

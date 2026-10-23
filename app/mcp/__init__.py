@@ -1,4 +1,4 @@
-"""MCP (Model Context Protocol) tool tiers for the ASSASSIN pipeline.
+"""MCP (Model Context Protocol) tool tiers for the SAPPHIRE pipeline.
 
 Tier 1 (local_tools): Raw SQL execution, raw PDF text extraction.
     Accessible only to local models.

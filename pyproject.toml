@@ -1,7 +1,7 @@
 [project]
-name = "assassin"
+name = "sapphire"
 version = "0.1.0"
-description = "ASSASSIN - local financial document intelligence pipeline. Zero PII egress."
+description = "SAPPHIRE - local financial document intelligence pipeline. Zero PII egress."
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",

@@ -9,7 +9,7 @@
 
 ## Problem
 
-[`docs/architecture/system_design.md`](../architecture/system_design.md) specifies a single Vault trust boundary where raw financial statements and PII are processed by local models for extraction and redaction before any external cloud interaction. While the Watchtower k3s cluster now hosts containerized llama-server inference on an NVIDIA RTX 3060 (12GB) serving Qwen 35B MoE, ASSASSIN lacked a client interface, exception hierarchy, and verification suite to communicate with the inference engine without leaking PII or violating the fail-loud contract.
+[`docs/architecture/system_design.md`](../architecture/system_design.md) specifies a single Vault trust boundary where raw financial statements and PII are processed by local models for extraction and redaction before any external cloud interaction. While the Watchtower k3s cluster now hosts containerized llama-server inference on an NVIDIA RTX 3060 (12GB) serving Qwen 35B MoE, SAPPHIRE lacked a client interface, exception hierarchy, and verification suite to communicate with the inference engine without leaking PII or violating the fail-loud contract.
 
 ## Appetite
 
@@ -19,8 +19,8 @@
 
 ```mermaid
 flowchart LR
-  subgraph "ASSASSIN Vault Trust Boundary"
-    A[ASSASSIN App / Pipeline] -->|Local HTTP REST| B[JARVIS\nk3s jarvis/jarvis:8080]
+  subgraph "SAPPHIRE Vault Trust Boundary"
+    A[SAPPHIRE App / Pipeline] -->|Local HTTP REST| B[JARVIS\nk3s jarvis/jarvis:8080]
     B -->|Qwen 35B MoE\nCompletion / Extraction| A
   end
   A -.->|Sanitized Aggregates Only| C[Optional Frontier Model]

@@ -1,4 +1,4 @@
-# ASSASSIN Observability & Telemetry Architecture
+# SAPPHIRE Observability & Telemetry Architecture
 
 **Document Type:** System Architecture Specification
 **Scope:** Distributed tracing, structured logging, metric collection, and PII sanitization.
@@ -8,12 +8,12 @@
 
 ## 1. Telemetry Topology
 
-Given the strict memory, disk, and network egress constraints of the "Watchtower" k3s homelab, ASSASSIN utilizes a localized, edge-terminated telemetry stack. No external SaaS APM platforms (e.g., Datadog, Honeycomb, New Relic) are permitted.
+Given the strict memory, disk, and network egress constraints of the "Watchtower" k3s homelab, SAPPHIRE utilizes a localized, edge-terminated telemetry stack. No external SaaS APM platforms (e.g., Datadog, Honeycomb, New Relic) are permitted.
 
 ```mermaid
 flowchart LR
-    subgraph "ASSASSIN k3s Cluster ('Watchtower')"
-        A[ASSASSIN App Pods\nOTel Python SDK] -->|OTLP gRPC/HTTP| B(OTel Collector DaemonSet)
+    subgraph "SAPPHIRE k3s Cluster ('Watchtower')"
+        A[SAPPHIRE App Pods\nOTel Python SDK] -->|OTLP gRPC/HTTP| B(OTel Collector DaemonSet)
         B -->|OTLP/HTTP| C[(Tempo - Traces)]
         B -->|Prometheus Remote Write| D[(Prometheus - Metrics)]
         B -->|Loki API| E[(Loki - Logs)]
@@ -52,7 +52,7 @@ The ingestion pipeline is broken down into distinct spans. Each stage emits a di
 
 ## 3. Logging Standards & PII Sanitization
 
-All ASSASSIN services must output logs exclusively to `stdout` in **strict JSON format**. The OTel SDK handles appending trace context to log records.
+All SAPPHIRE services must output logs exclusively to `stdout` in **strict JSON format**. The OTel SDK handles appending trace context to log records.
 
 ### Mandatory Attributes
 Every JSON log object must include:
@@ -63,7 +63,7 @@ Every JSON log object must include:
 - `logger`: Component name (e.g., `app.adapters.schwab`).
 
 ### Zero PII / Financial Data Constraints
-ASSASSIN processes highly sensitive financial documents. **Logs must never leak sensitive state.**
+SAPPHIRE processes highly sensitive financial documents. **Logs must never leak sensitive state.**
 - **No monetary amounts:** Never log raw cents, floats, or dollar strings.
   - *Violation:* `{"msg": "Parsed amount", "amount_cents": 12500}`
   - *Compliant:* `{"msg": "Parsed amount successfully", "amount_is_positive": true}`
@@ -77,9 +77,9 @@ ASSASSIN processes highly sensitive financial documents. **Logs must never leak 
 Metrics provide immediate health signals. To prevent storage blowouts (Prometheus TSDB cardinality explosion) on limited homelab SSDs, strict cardinality limits apply.
 
 ### Key RED/USE Metrics
-- **Parsing Duration Histogram:** `assassin_document_parse_duration_seconds`
-- **Queue Lag:** `assassin_queue_depth_count` (Redis)
-- **Extraction Error Counters:** `assassin_extraction_errors_total`
+- **Parsing Duration Histogram:** `sapphire_document_parse_duration_seconds`
+- **Queue Lag:** `sapphire_queue_depth_count` (Redis)
+- **Extraction Error Counters:** `sapphire_extraction_errors_total`
 
 ### Cardinality Limits
 Labels on metrics must have a fixed, finite set of possible values.

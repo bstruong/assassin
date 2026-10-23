@@ -95,7 +95,7 @@ def test_ambiguous_accounts_fails() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 3 QA Validation: Depository Adapter")
+    print("SAPPHIRE Step 3 QA Validation: Depository Adapter")
     print("=" * 60)
     test_depository_adapter_reconciliation()
     test_balance_mismatch_fails()

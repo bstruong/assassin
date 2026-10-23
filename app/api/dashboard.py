@@ -1,4 +1,4 @@
-"""HTMX Dashboard router for the ASSASSIN Local Ingest API.
+"""HTMX Dashboard router for the SAPPHIRE Local Ingest API.
 
 Guarantees:
 - Zero PII egress across all routes and responses.

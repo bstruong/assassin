@@ -137,7 +137,7 @@ def test_canonical_statement_invariants() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 1 QA Validation: Contracts Freeze")
+    print("SAPPHIRE Step 1 QA Validation: Contracts Freeze")
     print("=" * 60)
     test_token_geometry()
     test_extraction_run_status()

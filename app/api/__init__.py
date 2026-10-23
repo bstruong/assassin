@@ -1,4 +1,4 @@
-"""ASSASSIN Local Ingest API package."""
+"""SAPPHIRE Local Ingest API package."""
 
 from app.api.app import app, create_app
 from app.api.routes import router

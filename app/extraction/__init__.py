@@ -1,4 +1,4 @@
-"""Extraction package for ASSASSIN."""
+"""Extraction package for SAPPHIRE."""
 
 from app.extraction.core import (
     extract_pdf_to_raw,

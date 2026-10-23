@@ -43,7 +43,7 @@ def create_sample_pdf(path: Path, header_lines: list[str]) -> Path:
 
 def run_qa() -> None:
     print("=" * 80)
-    print("ASSASSIN Step 7: Exclusive Adapter Registry QA Verification")
+    print("SAPPHIRE Step 7: Exclusive Adapter Registry QA Verification")
     print("=" * 80)
 
     with tempfile.TemporaryDirectory() as tmp_dir_str:

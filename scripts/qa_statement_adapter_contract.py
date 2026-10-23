@@ -48,7 +48,7 @@ def main() -> int:
             failed += 1
             print(f"  [FAIL] {name}" + (f": {detail}" if detail else ""))
 
-    with tempfile.TemporaryDirectory(prefix="assassin-qa-adapter-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="sapphire-qa-adapter-") as tmp:
         pdf_path = Path(tmp) / "synthetic.pdf"
         pdf = canvas.Canvas(str(pdf_path))
         pdf.drawString(72, 720, "SYNTHETIC statement")

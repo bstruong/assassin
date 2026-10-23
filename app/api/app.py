@@ -1,4 +1,4 @@
-"""FastAPI application factory for the ASSASSIN Local Ingest API.
+"""FastAPI application factory for the SAPPHIRE Local Ingest API.
 
 Guarantees:
 - Zero PII egress across all routes and responses.
@@ -54,9 +54,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    """Create and configure the ASSASSIN FastAPI application."""
+    """Create and configure the SAPPHIRE FastAPI application."""
     app = FastAPI(
-        title="ASSASSIN Local Ingest API",
+        title="SAPPHIRE Local Ingest API",
         description="Local financial document intelligence pipeline. Zero PII egress.",
         version="0.1.0",
         lifespan=lifespan,
