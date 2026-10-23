@@ -5,7 +5,7 @@
 **Bettor:** Human PM  
 **Appetite:** Small Batch (2 weeks)  
 **Product north star:** YNAB-useful personal Vault — accounts & totals first; transactions as drill-down  
-**Depends on:** Statements in the browser — shipped ([#49](https://github.com/bstruong/assassin/pull/49))
+**Depends on:** Statements in the browser — shipped ([#49](https://github.com/bstruong/sapphire/pull/49))
 
 ---
 
@@ -43,7 +43,7 @@ flowchart LR
 ## Visuals (shaping)
 
 - Baseline (shipped on `main` today): [`visuals/dashboard_baseline_wireframe.html`](visuals/dashboard_baseline_wireframe.html)
-- Prior bet in flight (ledger after upload): [PR #49](https://github.com/bstruong/assassin/pull/49) — treat upload + templated ledger as the surface this pitch replaces as **home**
+- Prior bet in flight (ledger after upload): [PR #49](https://github.com/bstruong/sapphire/pull/49) — treat upload + templated ledger as the surface this pitch replaces as **home**
 - Proposed (overview-first home): [`visuals/account_overview_wireframe.html`](visuals/account_overview_wireframe.html)
 
 ## Rabbit holes

@@ -11,7 +11,7 @@ The Shape Up **betting table / in-bet / shipped / cool-down / raw** board lives 
 | **Project** | [SAPPHIRE Shape Up](https://github.com/users/bstruong/projects/5) (`PVT_kwHOAujBHc4Bm78V`, #5) |
 | **Visibility** | **Private** (`public: false`) |
 | **Owner** | `@bstruong` (personal Projects) |
-| **Linked repo** | [bstruong/assassin](https://github.com/bstruong/assassin) |
+| **Linked repo** | [bstruong/sapphire](https://github.com/bstruong/sapphire) |
 | **Primary view** | **Board by Lane** (not Roadmap); Table optional for betting |
 | **Fields** | Lane · Appetite · Cycle · Pitch path |
 | **Cycle** | `cycle-2026-w42` |
@@ -64,7 +64,7 @@ No local Tier-1 builder role while Cloud-Build Mode is active.
 
 One-liners may still be sketched in [`docs/specs/raw_backlog.md`](docs/specs/raw_backlog.md) before they become Project items; the Project wins when they disagree.
 
-Shipped / cool-down / deferred items (including Account overview home [#50](https://github.com/bstruong/assassin/pull/50)) live on [Project #5](https://github.com/users/bstruong/projects/5)—not as a second table in this file.
+Shipped / cool-down / deferred items (including Account overview home [#50](https://github.com/bstruong/sapphire/pull/50)) live on [Project #5](https://github.com/users/bstruong/projects/5)—not as a second table in this file.
 
 ---
 

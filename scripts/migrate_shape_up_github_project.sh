@@ -11,7 +11,7 @@ set -euo pipefail
 
 OWNER="${SHAPE_UP_OWNER:-@me}"
 TITLE="${SHAPE_UP_TITLE:-SAPPHIRE Shape Up}"
-REPO="${SHAPE_UP_REPO:-bstruong/assassin}"
+REPO="${SHAPE_UP_REPO:-bstruong/sapphire}"
 CYCLE="${SHAPE_UP_CYCLE:-cycle-2026-w42}"
 
 need() { command -v "$1" >/dev/null || { echo "missing dependency: $1" >&2; exit 1; }; }
