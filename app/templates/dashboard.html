@@ -46,6 +46,13 @@
         .empty-state p { font-size: 0.9rem; }
         .loading { color: #58a6ff; font-style: italic; }
         input[type="text"] { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; color: #c9d1d9; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: #58a6ff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .card-subtitle { font-size: 0.8rem; color: #8b949e; margin-bottom: 14px; }
+        .action-tab-btn { border: 1px solid #30363d; font-weight: 600; transition: all 0.15s ease; }
+        .action-tab-btn.active { background: #238636; border-color: #2ea043; color: #fff; }
+        .action-tab-btn.secondary { background: #21262d; border-color: #30363d; color: #8b949e; }
+        .action-tab-btn.secondary:hover { color: #c9d1d9; border-color: #58a6ff; }
     </style>
 </head>
 <body>
@@ -61,48 +68,148 @@
                 <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Chase · Schwab</span>
             </div>
             <div class="pane-body">
-                <form id="upload-form"
-                      hx-post="/api/v1/dashboard/upload"
-                      hx-encoding="multipart/form-data"
-                      hx-swap="innerHTML"
-                      hx-target="#pane-vault-body"
-                      hx-indicator="#pane-vault-body">
-                    <div class="form-group">
-                        <label for="statement-file">Statement PDF</label>
-                        <input type="file" id="statement-file" name="file" accept="application/pdf,.pdf" required>
+                <!-- Streamlined Mode Navigation -->
+                <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <button type="button" id="tab-btn-budget" class="action-tab-btn secondary"
+                            onclick="switchActionTab('budget')"
+                            hx-get="/api/v1/dashboard/budget"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML"
+                            style="flex:1; padding:8px 12px; font-size:0.85rem; border-radius:6px; cursor:pointer;">
+                        ✉️ Budget
+                    </button>
+                    <button type="button" id="tab-btn-upload" class="action-tab-btn active"
+                            onclick="switchActionTab('upload')"
+                            hx-get="/api/v1/dashboard/overview"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML"
+                            style="flex:1; padding:8px 12px; font-size:0.85rem; border-radius:6px; cursor:pointer;">
+                        📄 Upload &amp; Audit
+                    </button>
+                </div>
+
+                <!-- Budget View: Clean, Focused Envelope Actions -->
+                <div id="action-content-budget" style="display:none;">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>✉️</span> Assign to Envelope
+                        </div>
+                        <p class="card-subtitle">Give unassigned dollars a job</p>
+                        <form id="budget-assign-form"
+                              hx-post="/api/v1/dashboard/budget/assign"
+                              hx-swap="innerHTML"
+                              hx-target="#pane-vault-body">
+                            <div class="form-group">
+                                <label for="assign-envelope">Envelope</label>
+                                <select id="assign-envelope" name="envelope_id" required
+                                        style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;color:#c9d1d9;">
+                                    {% if assign_envelopes %}
+                                    {% for env in assign_envelopes %}
+                                    <option value="{{ env.envelope_id }}">{{ env.name }}</option>
+                                    {% endfor %}
+                                    {% else %}
+                                    <option value="" disabled selected>Create an envelope first</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assign-amount">Amount (USD)</label>
+                                <input type="text" id="assign-amount" name="amount_usd"
+                                       placeholder="e.g. 50 or 50.00" required>
+                            </div>
+                            <button type="submit" id="assign-btn" style="width:100%;">Assign Dollars</button>
+                        </form>
                     </div>
-                    <button type="submit" id="upload-btn">Upload to Vault</button>
-                </form>
-                <form hx-post="/api/v1/dashboard/analyze"
-                      hx-swap="innerHTML"
-                      hx-target="#pane-vault-body"
-                      hx-indicator="#pane-vault-body"
-                      style="margin-top:16px;">
-                    <div class="form-group">
-                        <label for="question">Refresh latest ledger</label>
-                        <textarea id="question" name="question" placeholder="Optional note (required field for refresh)" required>Show latest Vault ledger</textarea>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <span>＋</span> Create Envelope
+                        </div>
+                        <p class="card-subtitle">Add a new budget category</p>
+                        <form id="envelope-create-form"
+                              hx-post="/api/v1/dashboard/budget/envelopes"
+                              hx-swap="innerHTML"
+                              hx-target="#pane-vault-body">
+                            <div class="form-group">
+                                <label for="envelope-name">Envelope Name</label>
+                                <input type="text" id="envelope-name" name="name"
+                                       placeholder="e.g. Groceries" required>
+                            </div>
+                            <button type="submit" class="secondary" style="width:100%;">Create Envelope</button>
+                        </form>
                     </div>
-                    <button type="submit" id="submit-btn" class="secondary">Show latest ledger</button>
-                </form>
-                <form id="frontier-audit-form"
-                      hx-post="/api/v1/dashboard/frontier-audit"
-                      hx-swap="innerHTML"
-                      hx-target="#frontier-result"
-                      style="margin-top:16px;">
-                    <div class="form-group">
-                        <label for="frontier-group-by">Aggregate group</label>
-                        <input type="text" id="frontier-group-by" name="group_by"
-                               value="transaction_category" required>
+                </div>
+
+                <!-- Upload & Audit View: Clean Statements & Collapsible Advanced Tools -->
+                <div id="action-content-upload">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>📄</span> Statement Upload
+                        </div>
+                        <p class="card-subtitle">Upload Chase or Schwab statement PDFs to local Vault</p>
+                        <form id="upload-form"
+                              hx-post="/api/v1/dashboard/upload"
+                              hx-encoding="multipart/form-data"
+                              hx-swap="innerHTML"
+                              hx-target="#pane-vault-body"
+                              hx-indicator="#pane-vault-body">
+                            <div class="form-group">
+                                <label for="statement-file">Statement PDF</label>
+                                <input type="file" id="statement-file" name="file" accept="application/pdf,.pdf" required>
+                            </div>
+                            <button type="submit" id="upload-btn" style="width:100%;">Upload to Vault</button>
+                        </form>
                     </div>
-                    <button type="submit" id="frontier-verify-btn" class="secondary">Verify &amp; Analyze with Frontier Model</button>
-                </form>
-                <div id="frontier-result"></div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <span>⚙️</span> Audit &amp; Ledger
+                        </div>
+                        <p class="card-subtitle">Query Vault ledger or verify with Frontier model</p>
+                        <form hx-post="/api/v1/dashboard/analyze"
+                              hx-swap="innerHTML"
+                              hx-target="#pane-vault-body"
+                              hx-indicator="#pane-vault-body">
+                            <div class="form-group">
+                                <label for="question">Refresh latest ledger</label>
+                                <textarea id="question" name="question" placeholder="Optional note" required>Show latest Vault ledger</textarea>
+                            </div>
+                            <button type="submit" id="submit-btn" class="secondary" style="width:100%;">Show latest ledger</button>
+                        </form>
+                        <form id="frontier-audit-form"
+                              hx-post="/api/v1/dashboard/frontier-audit"
+                              hx-swap="innerHTML"
+                              hx-target="#frontier-result"
+                              style="margin-top:16px;">
+                            <div class="form-group">
+                                <label for="frontier-group-by">Aggregate group</label>
+                                <input type="text" id="frontier-group-by" name="group_by"
+                                       value="transaction_category" required>
+                            </div>
+                            <button type="submit" id="frontier-verify-btn" class="secondary" style="width:100%;">Verify &amp; Analyze with Frontier Model</button>
+                        </form>
+                        <div id="frontier-result"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="pane" id="pane-vault">
             <div class="pane-header">
                 <span class="icon">&#128274;</span>The Local Vault
-                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">Account overview</span>
+                <span style="float:right;font-weight:400;font-size:0.75rem;color:#8b949e">
+                    <button type="button" id="header-btn-overview" class="action-tab-btn active"
+                            style="padding:4px 10px;font-size:0.75rem;margin-right:4px;"
+                            hx-get="/api/v1/dashboard/overview"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML"
+                            onclick="switchActionTab('upload')">Overview</button>
+                    <button type="button" id="header-btn-budget" class="secondary"
+                            style="padding:4px 10px;font-size:0.75rem;"
+                            hx-get="/api/v1/dashboard/budget"
+                            hx-target="#pane-vault-body"
+                            hx-swap="innerHTML"
+                            onclick="switchActionTab('budget')">Budget</button>
+                </span>
             </div>
             <div class="pane-body" id="pane-vault-body">
                 {{ vault_pane_html | safe }}
@@ -110,6 +217,31 @@
         </div>
     </div>
     <script>
+        function switchActionTab(tab) {
+            var budgetContent = document.getElementById("action-content-budget");
+            var uploadContent = document.getElementById("action-content-upload");
+            var btnBudget = document.getElementById("tab-btn-budget");
+            var btnUpload = document.getElementById("tab-btn-upload");
+            var headerBudget = document.getElementById("header-btn-budget");
+            var headerOverview = document.getElementById("header-btn-overview");
+
+            if (tab === "budget") {
+                if (budgetContent) budgetContent.style.display = "block";
+                if (uploadContent) uploadContent.style.display = "none";
+                if (btnBudget) { btnBudget.setAttribute("class", "action-tab-btn active"); }
+                if (btnUpload) { btnUpload.setAttribute("class", "action-tab-btn secondary"); }
+                if (headerBudget) { headerBudget.setAttribute("class", "action-tab-btn active"); }
+                if (headerOverview) { headerOverview.setAttribute("class", "secondary"); }
+            } else {
+                if (budgetContent) budgetContent.style.display = "none";
+                if (uploadContent) uploadContent.style.display = "block";
+                if (btnUpload) { btnUpload.setAttribute("class", "action-tab-btn active"); }
+                if (btnBudget) { btnBudget.setAttribute("class", "action-tab-btn secondary"); }
+                if (headerOverview) { headerOverview.setAttribute("class", "action-tab-btn active"); }
+                if (headerBudget) { headerBudget.setAttribute("class", "secondary"); }
+            }
+        }
+
         document.body.addEventListener("htmx:beforeSwap", function (event) {
             var xhr = event.detail.xhr;
             if (!xhr || !xhr.responseURL) {
@@ -121,7 +253,8 @@
             var isAnalyze = url.indexOf("/api/v1/dashboard/analyze") !== -1;
             var isStatement = url.indexOf("/api/v1/dashboard/statements/") !== -1;
             var isOverview = url.indexOf("/api/v1/dashboard/overview") !== -1;
-            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview) && xhr.status === 400) {
+            var isBudget = url.indexOf("/api/v1/dashboard/budget") !== -1;
+            if ((isFrontier || isUpload || isAnalyze || isStatement || isOverview || isBudget) && xhr.status === 400) {
                 event.detail.shouldSwap = true;
                 event.detail.isError = false;
             }

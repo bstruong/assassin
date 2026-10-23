@@ -90,9 +90,10 @@ def _ledger(conn: psycopg.Connection) -> list[tuple[str, str, object]]:
 
 def test_packaged_migrations_start_at_baseline_snapshot() -> None:
     discovered = discover_migrations(SCHEMA_PATH, DEFAULT_MIGRATIONS_DIR)
-    assert [item.version for item in discovered] == ["0001"]
+    assert [item.version for item in discovered] == ["0001", "0002"]
     assert discovered[0].path == SCHEMA_PATH
     assert discovered[0].path.is_file()
+    assert discovered[1].path.name.startswith("0002_")
 
 
 def test_fresh_apply_reaches_holdings_with_integer_cents(
@@ -101,13 +102,15 @@ def test_fresh_apply_reaches_holdings_with_integer_cents(
     with psycopg.connect(empty_database_url) as conn:
         applied = apply_migrations(conn)
         conn.commit()
-        assert applied == ["0001"]
+        assert applied == ["0001", "0002"]
         assert _column_type(conn, "holdings", "market_value_cents") == "bigint"
         assert _column_type(conn, "statements", "opening_balance_cents") == "bigint"
+        assert _column_type(conn, "envelopes", "balance_cents") == "bigint"
         ledger = _ledger(conn)
-        assert len(ledger) == 1
+        assert len(ledger) == 2
         assert ledger[0][0] == "0001"
         assert ledger[0][1] == migration_checksum(SCHEMA_PATH)
+        assert ledger[1][0] == "0002"
 
 
 def test_init_db_on_fresh_database_uses_migration_runner(
@@ -116,19 +119,20 @@ def test_init_db_on_fresh_database_uses_migration_runner(
     init_db(url=empty_database_url)
     with psycopg.connect(empty_database_url) as conn:
         assert _column_type(conn, "holdings", "quantity_nanos") == "bigint"
-        assert [row[0] for row in _ledger(conn)] == ["0001"]
+        assert _column_type(conn, "envelopes", "balance_cents") == "bigint"
+        assert [row[0] for row in _ledger(conn)] == ["0001", "0002"]
 
     standalone = psycopg.connect(empty_database_url)
     try:
         init_db(standalone)
-        assert [row[0] for row in _ledger(standalone)] == ["0001"]
+        assert [row[0] for row in _ledger(standalone)] == ["0001", "0002"]
     finally:
         standalone.close()
 
 
 def test_second_apply_is_a_noop(empty_database_url: str) -> None:
     with psycopg.connect(empty_database_url) as conn:
-        assert apply_migrations(conn) == ["0001"]
+        assert apply_migrations(conn) == ["0001", "0002"]
         conn.commit()
         before = _ledger(conn)
         conn.execute("DROP TABLE holdings")
@@ -167,7 +171,7 @@ def test_missing_recorded_version_fails(empty_database_url: str) -> None:
             INSERT INTO schema_migrations (version, checksum)
             VALUES (%s, %s)
             """,
-            ("0002", "a" * 64),
+            ("0003", "a" * 64),
         )
         conn.commit()
         with pytest.raises(MigrationError, match="missing"):
