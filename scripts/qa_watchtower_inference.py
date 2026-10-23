@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""QA Verification Script: Watchtower Containerized Inference Engine Integration.
+"""QA Verification Script: JARVIS (Watchtower shared inference) Integration.
 
-Verifies the ASSASSIN Vault interface to the Watchtower k3s inference engine
-(serving Qwen 35B MoE at http://192.168.1.92:8080/v1):
-  1. Live connectivity and model discovery against Watchtower inference endpoint.
+Verifies the ASSASSIN Vault interface to JARVIS
+(default http://ai.watchtower.local/v1; on-node http://127.0.0.1:8080/v1):
+  1. Live connectivity and model discovery against the JARVIS endpoint.
   2. Completion, PII stripping, and structured JSON extraction inside the Vault boundary.
   3. Strict zero-PII logging verification.
   4. Intentional negative failure cases (unreachable host, invalid model, empty payloads).

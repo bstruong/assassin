@@ -20,13 +20,13 @@
 ```mermaid
 flowchart LR
   subgraph "ASSASSIN Vault Trust Boundary"
-    A[ASSASSIN App / Pipeline] -->|Local HTTP REST| B[Watchtower Inference Engine\nk3s llama-server:8080]
+    A[ASSASSIN App / Pipeline] -->|Local HTTP REST| B[JARVIS\nk3s jarvis/jarvis:8080]
     B -->|Qwen 35B MoE\nCompletion / Extraction| A
   end
   A -.->|Sanitized Aggregates Only| C[Optional Frontier Model]
 ```
 
-1. Core client module in `app/core/inference.py` wrapping the OpenAI-compatible Watchtower inference endpoint (`http://192.168.1.92:8080/v1`).
+1. Core client module in `app/core/inference.py` wrapping the OpenAI-compatible JARVIS endpoint (`http://ai.watchtower.local/v1`, or `http://127.0.0.1:8080/v1` on the node).
 2. Explicit exception taxonomy (`InferenceError`, `InferenceConnectionError`, `InferenceContractError`) descending from `PipelineError`.
 3. High-level capabilities: `get_models()`, `complete()`, `strip_pii()`, and `extract_structured()`.
 4. Strict zero-PII logging invariant: operational telemetry (model, duration, token counts) is logged while raw prompts, PII, and financial amounts are excluded.

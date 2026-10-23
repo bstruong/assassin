@@ -1,7 +1,13 @@
 """Vault local inference client for ASSASSIN.
 
-Communicates with the Watchtower containerized inference engine (running in k3s)
-via its OpenAI-compatible HTTP API.
+Communicates with **JARVIS**, the shared Watchtower inference engine (k3s
+namespace/deployment `jarvis`/`jarvis`) via its OpenAI-compatible HTTP API.
+
+Default URL is the Traefik ingress (`ai.watchtower.local`). On the Watchtower
+node use `http://127.0.0.1:8080/v1`; in-cluster use
+`http://jarvis.jarvis.svc.cluster.local:8080/v1`. Do not use LAN `:8080`
+(hostPort is loopback-only). Exclusive GPU work: see
+`homelab-k3s/scripts/jarvis-lease.sh`.
 
 Guarantees:
 - Single Vault trust boundary: raw statements and PII remain inside the Vault.
@@ -32,7 +38,7 @@ from app.models.exceptions import (
 
 logger = logging.getLogger("app.core.inference")
 
-_DEFAULT_VAULT_URL = "http://192.168.1.92:8080/v1"
+_DEFAULT_VAULT_URL = "http://ai.watchtower.local/v1"
 _DEFAULT_MODEL = "qwen36-coder-hybrid"
 _DEFAULT_TIMEOUT_SECONDS = 30.0
 
@@ -40,7 +46,7 @@ _JSON_FENCE_PATTERN = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```")
 
 
 class VaultInferenceClient:
-    """Client for Watchtower k3s containerized inference within the Vault trust boundary."""
+    """Client for JARVIS (Watchtower shared inference) within the Vault trust boundary."""
 
     def __init__(
         self,
