@@ -15,13 +15,19 @@ from app.models.exceptions import TokenError
 def parse_usd_form_to_cents(amount_usd: Any) -> int:
     """Parse a positive USD form value into integer cents.
 
-    Rejects non-strings, zero, and negatives (assign must move money in).
+    Accepts positive dollar amounts with or without minor currency digits
+    (e.g., '50', '$50', '50.00', '$1,245.00'). Rejects sub-cent precision,
+    non-two decimal places (e.g. '12.3', '12.345'), zero, and negatives.
+    Never uses ``float``.
     """
     if not isinstance(amount_usd, str):
         raise TokenError(
             f"amount_usd must be a string, got {type(amount_usd).__name__}"
         )
-    cents = parse_currency_to_cents(amount_usd, allow_zero=False)
+    cleaned = amount_usd.strip()
+    if "." not in cleaned:
+        cleaned = f"{cleaned}.00"
+    cents = parse_currency_to_cents(cleaned, allow_zero=False)
     if cents <= 0:
         raise TokenError("amount_usd must be a positive USD amount")
     return cents

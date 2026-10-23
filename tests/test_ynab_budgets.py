@@ -226,6 +226,32 @@ class TestBudgetDashboard:
             assert rows[0].balance_cents == 5_000
             assert ready_to_assign_cents(conn) == before - 5_000
 
+    def test_assign_form_whole_dollar_updates_balances(
+        self, client: TestClient, tmp_path: Path, postgres_url: str
+    ) -> None:
+        _upload(client, tmp_path, "chase_checking_happy")
+        with psycopg.connect(postgres_url) as conn:
+            env = create_envelope(conn, name="SYNTHETIC Entertainment")
+            conn.commit()
+            envelope_id = str(env.envelope_id)
+            before = ready_to_assign_cents(conn)
+
+        response = client.post(
+            "/api/v1/dashboard/budget/assign",
+            data={"envelope_id": envelope_id, "amount_usd": "50"},
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert "SYNTHETIC Entertainment" in response.text
+        assert "$50.00" in response.text
+
+        with psycopg.connect(postgres_url) as conn:
+            rows = [
+                e for e in list_envelopes(conn) if e.name == "SYNTHETIC Entertainment"
+            ]
+            assert rows[0].balance_cents == 5_000
+            assert ready_to_assign_cents(conn) == before - 5_000
+
     def test_assign_over_available_returns_loud_error(
         self, client: TestClient, tmp_path: Path, postgres_url: str
     ) -> None:

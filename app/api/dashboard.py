@@ -337,7 +337,7 @@ async def post_budget_assign(
         return HTMLResponse(
             content=env.get_template("upload_error.html").render(
                 error_code="INVALID_AMOUNT",
-                detail="Amount must be positive USD with exactly two decimal digits.",
+                detail="Amount must be positive USD (e.g. 50 or 50.00).",
             ),
             status_code=status.HTTP_400_BAD_REQUEST,
         )

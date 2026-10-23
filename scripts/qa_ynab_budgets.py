@@ -164,6 +164,17 @@ def main() -> int:
             _fail(f"expected balance_cents=5000 int, got {after.balance_cents!r}")
             failures += 1
 
+    assign_whole = client.post(
+        "/api/v1/dashboard/budget/assign",
+        data={"envelope_id": envelope_id, "amount_usd": "25"},
+        headers={"HX-Request": "true"},
+    )
+    if assign_whole.status_code == 200 and "$75.00" in assign_whole.text:
+        _pass("whole-dollar assign $25 updates Budget pane to $75.00")
+    else:
+        _fail(f"whole-dollar assign failed: status={assign_whole.status_code}")
+        failures += 1
+
     over = client.post(
         "/api/v1/dashboard/budget/assign",
         data={"envelope_id": envelope_id, "amount_usd": "999999.00"},

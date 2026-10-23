@@ -13,13 +13,19 @@ def test_happy_two_decimal_usd() -> None:
     assert parse_usd_form_to_cents("$1,245.00") == 124_500
 
 
+def test_happy_whole_dollar_usd() -> None:
+    assert parse_usd_form_to_cents("50") == 5_000
+    assert parse_usd_form_to_cents("$50") == 5_000
+    assert parse_usd_form_to_cents("$1,245") == 124_500
+
+
 def test_rejects_wrong_decimal_places() -> None:
     with pytest.raises(TokenError):
         parse_usd_form_to_cents("12.3")
     with pytest.raises(TokenError):
         parse_usd_form_to_cents("12.345")
     with pytest.raises(TokenError):
-        parse_usd_form_to_cents("12")
+        parse_usd_form_to_cents("12.")
 
 
 def test_rejects_zero_and_negative_for_assign() -> None:
