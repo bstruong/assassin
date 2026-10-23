@@ -49,7 +49,7 @@ def main() -> int:
 
     if not os.environ.get("DATABASE_URL"):
         os.environ["DATABASE_URL"] = (
-            "postgresql://postgres:assassin@localhost:5432/assassin_test"
+            "postgresql://postgres:sapphire@localhost:54329/sapphire_test"
         )
 
     import psycopg

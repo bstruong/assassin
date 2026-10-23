@@ -10,7 +10,7 @@ Manual UI QA: not applicable (no user-visible UI).
 
 Run with: uv run python scripts/qa_tier2_named_tools.py
 
-Uses postgresql://postgres:assassin@localhost:54329/assassin_test and resets
+Uses postgresql://postgres:sapphire@localhost:54329/sapphire_test and resets
 canonical tables in that test database before and after the checks.
 """
 
@@ -72,7 +72,7 @@ def _database_url() -> str:
     return (
         os.environ.get("TEST_DATABASE_URL")
         or os.environ.get("DATABASE_URL")
-        or "postgresql://postgres:assassin@localhost:54329/assassin_test"
+        or "postgresql://postgres:sapphire@localhost:54329/sapphire_test"
     )
 
 

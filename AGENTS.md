@@ -166,7 +166,7 @@ The prior Dual-Tier path (cloud orchestrator plans only; local `qwen36-coder` / 
 2. **Explicit Thread Cleanup:** All test scripts and execution wrappers must have explicit cleanup logic (e.g., `sys.exit(0)` in Python or `os.Exit(0)` in Go) to forcefully terminate all lingering background threads.
 3. **Pipe Detachment:** If you absolutely must spawn a persistent background process, you must redirect its output to detach it from the execution pipe: `command > /dev/null 2>&1 &`.
 4. **Local inference cleanup:** If this session started `llama-server` (via `llama-up.sh` / `pi-up.sh`), end the turn with `killall llama-server` so `mlock`'d weights (~20GB) are released.
-5. **Host-visible artifacts only:** Never tell agents to write reports to `/tmp/...` inside the harness container; write under `/home/brian/Projects/assassin/` (or the active workspace root).
+5. **Host-visible artifacts only:** Never tell agents to write reports to `/tmp/...` inside the harness container; write under `/home/brian/Projects/sapphire/` (or the active workspace root).
 
 ## Troubleshooting & CI/CD Runbooks (For Future Agents)
 
@@ -188,5 +188,5 @@ The prior Dual-Tier path (cloud orchestrator plans only; local `qwen36-coder` / 
   killall llama-server
   pgrep -a llama-server || echo "llama-server stopped"
   ```
-* **Failure mode — missing reports:** Paths under the container's `/tmp` are not on the host. Instruct agents to write findings into the mounted workspace (e.g. `/home/brian/Projects/assassin/investigation.md`), never `/tmp/report.md`.
+* **Failure mode — missing reports:** Paths under the container's `/tmp` are not on the host. Instruct agents to write findings into the mounted workspace (e.g. `/home/brian/Projects/sapphire/investigation.md`), never `/tmp/report.md`.
 
