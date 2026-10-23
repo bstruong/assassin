@@ -5,12 +5,12 @@
 #   gh auth refresh -s project,read:project
 #   bash scripts/migrate_shape_up_github_project.sh
 #
-# Idempotent-ish: if a project titled "ASSASSIN Shape Up" already exists for
-# OWNER, reuses it and skips create. Always (re)links the assassin repo.
+# Idempotent-ish: if a project titled "SAPPHIRE Shape Up" already exists for
+# OWNER, reuses it and skips create. Always (re)links the sapphire repo.
 set -euo pipefail
 
 OWNER="${SHAPE_UP_OWNER:-@me}"
-TITLE="${SHAPE_UP_TITLE:-ASSASSIN Shape Up}"
+TITLE="${SHAPE_UP_TITLE:-SAPPHIRE Shape Up}"
 REPO="${SHAPE_UP_REPO:-bstruong/assassin}"
 CYCLE="${SHAPE_UP_CYCLE:-cycle-2026-w42}"
 
@@ -51,9 +51,9 @@ fi
 
 echo "==> Force visibility PRIVATE"
 gh project edit "$NUMBER" --owner "$OWNER" --visibility PRIVATE \
-  --description "ASSASSIN Shape Up control plane (betting table, in-bet, shipped archive, cool-down)." \
+  --description "SAPPHIRE Shape Up control plane (betting table, in-bet, shipped archive, cool-down)." \
   --readme "$(cat <<'EOF'
-# ASSASSIN Shape Up
+# SAPPHIRE Shape Up
 
 **Source of truth** for active bets and the betting table.
 
@@ -206,4 +206,4 @@ echo "DONE. Private Shape Up board:"
 echo "  $PROJECT_URL"
 echo
 echo "Paste that URL into ARCH_PLAN.md (GitHub Project pointer) if not already set."
-echo "$PROJECT_URL" > /tmp/assassin_shape_up_project_url.txt
+echo "$PROJECT_URL" > /tmp/sapphire_shape_up_project_url.txt

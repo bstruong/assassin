@@ -146,7 +146,7 @@ def test_negative_minimum_payment_fails() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 4 QA Validation: Credit Card Adapter")
+    print("SAPPHIRE Step 4 QA Validation: Credit Card Adapter")
     print("=" * 60)
     test_credit_card_adapter_reconciliation()
     test_credit_card_equation_mismatch_fails()

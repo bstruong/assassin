@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """QA Verification Script: JARVIS (Watchtower shared inference) Integration.
 
-Verifies the ASSASSIN Vault interface to JARVIS
+Verifies the SAPPHIRE Vault interface to JARVIS
 (default http://ai.watchtower.local/v1; on-node http://127.0.0.1:8080/v1):
   1. Live connectivity and model discovery against the JARVIS endpoint.
   2. Completion, PII stripping, and structured JSON extraction inside the Vault boundary.
@@ -63,7 +63,7 @@ def main() -> int:
     report = QAReport()
 
     print("=" * 65)
-    print("  ASSASSIN Vault: Watchtower Inference Engine QA Verification")
+    print("  SAPPHIRE Vault: Watchtower Inference Engine QA Verification")
     print("=" * 65)
 
     client = VaultInferenceClient()

@@ -202,7 +202,7 @@ def test_canonical_persistence() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 5 QA Validation: PostgreSQL Persistence")
+    print("SAPPHIRE Step 5 QA Validation: PostgreSQL Persistence")
     print("=" * 60)
     test_schema_init_and_ast_invariants()
     test_raw_persistence_and_reingest()

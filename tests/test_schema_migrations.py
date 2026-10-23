@@ -34,7 +34,7 @@ def _swap_database(database_url: str, database: str) -> str:
 def empty_database_url(postgres_url: str) -> Iterator[str]:
     """Create a private database and drop it after the test."""
     admin_url = _swap_database(postgres_url, "postgres")
-    name = f"assassin_mig_{uuid4().hex[:12]}"
+    name = f"sapphire_mig_{uuid4().hex[:12]}"
     with psycopg.connect(admin_url, autocommit=True) as admin:
         admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
     url = _swap_database(postgres_url, name)

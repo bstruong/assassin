@@ -1,1 +1,1 @@
-"""ASSASSIN - local financial document intelligence pipeline."""
+"""SAPPHIRE - local financial document intelligence pipeline."""

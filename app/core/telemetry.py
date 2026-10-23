@@ -1,4 +1,4 @@
-"""Telemetry and structured logging configuration for ASSASSIN."""
+"""Telemetry and structured logging configuration for SAPPHIRE."""
 
 import json
 import logging

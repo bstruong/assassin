@@ -181,7 +181,7 @@ def test_ambiguous_accounts_fails() -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("ASSASSIN Step 6 QA Validation: Investment Statement Adapter")
+    print("SAPPHIRE Step 6 QA Validation: Investment Statement Adapter")
     print("=" * 60)
     test_brokerage_cash_reconciliation()
     test_brokerage_portfolio_bridge()

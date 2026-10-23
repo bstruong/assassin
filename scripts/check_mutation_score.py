@@ -168,7 +168,7 @@ def main() -> int:
         stats = json.load(f)
 
     print("=" * 70)
-    print("🧬 ASSASSIN Mutation Testing Quality Gate")
+    print("🧬 SAPPHIRE Mutation Testing Quality Gate")
     print("=" * 70)
 
     prelim_ok, detail_lines = evaluate_stats(

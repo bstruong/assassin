@@ -1,1 +1,1 @@
-"""FastAPI routers for the ASSASSIN Local Ingest API."""
+"""FastAPI routers for the SAPPHIRE Local Ingest API."""

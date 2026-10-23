@@ -158,7 +158,7 @@ def main() -> int:
     print("Manual UI QA: not applicable (no user-visible UI).")
     database_url = DEFAULT_DATABASE_URL
     admin_url = _admin_url(database_url)
-    name = f"assassin_qa_mig_{uuid4().hex[:12]}"
+    name = f"sapphire_qa_mig_{uuid4().hex[:12]}"
     report = QAReport()
     try:
         _create_database(admin_url, name)

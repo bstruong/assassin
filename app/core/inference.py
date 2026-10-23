@@ -1,4 +1,4 @@
-"""Vault local inference client for ASSASSIN.
+"""Vault local inference client for SAPPHIRE.
 
 Communicates with **JARVIS**, the shared Watchtower inference engine (k3s
 namespace/deployment `jarvis`/`jarvis`) via its OpenAI-compatible HTTP API.
@@ -367,7 +367,7 @@ class VaultInferenceClient:
             raise ValueError("schema_description must not be empty.")
 
         system_prompt = (
-            "You are a financial extraction engine operating inside the ASSASSIN Vault. "
+            "You are a financial extraction engine operating inside the SAPPHIRE Vault. "
             f"Extract the requested data strictly following this schema:\n{stripped_schema}\n"
             "Return ONLY a valid JSON object. Do not wrap in conversational text or commentary."
         )

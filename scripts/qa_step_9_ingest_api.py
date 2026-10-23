@@ -67,7 +67,7 @@ def render_custom_pdf(lines: list[str], target_path: Path) -> Path:
 
 def main() -> None:
     print("=" * 80)
-    print("ASSASSIN Step 9: Local Ingest API QA Verification")
+    print("SAPPHIRE Step 9: Local Ingest API QA Verification")
     print("=" * 80)
 
     # Initialize schema

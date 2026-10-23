@@ -219,7 +219,7 @@ class TestAdapterRegistryMatching:
 
 
 class TestRegistryCodeInvariants:
-    """Ensure registry adheres to ASSASSIN core invariants."""
+    """Ensure registry adheres to SAPPHIRE core invariants."""
 
     def test_no_dynamic_metaprogramming_in_registry(self) -> None:
         registry_file = Path(__file__).parents[1] / "app" / "adapters" / "registry.py"

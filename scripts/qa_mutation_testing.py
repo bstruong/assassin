@@ -37,7 +37,7 @@ def main() -> int:
     root_dir = Path(__file__).resolve().parent.parent
 
     print("=" * 75)
-    print("🎯 ASSASSIN Product Manager Acceptance: Mutation Testing")
+    print("🎯 SAPPHIRE Product Manager Acceptance: Mutation Testing")
     print("   Problem Solved: 'How do I know tests are good vs. superficial coverage?'")
     print("=" * 75)
     print("\nConcept:")
@@ -46,7 +46,7 @@ def main() -> int:
     )
     print("  • Mutation Testing answers: 'If a subtle bug, typo, or boundary inversion")
     print("    is introduced into that line, will our test suite catch and fail it?'")
-    print("  • ASSASSIN scopes mutation to financial modules and uses classic score")
+    print("  • SAPPHIRE scopes mutation to financial modules and uses classic score")
     print("    killed/(killed+survived), with no_tests as a separate hard fail.")
 
     print_banner("1. Dependency & Configuration Verification")

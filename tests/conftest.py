@@ -1,4 +1,4 @@
-"""Pytest fixtures shared across the ASSASSIN test suite."""
+"""Pytest fixtures shared across the SAPPHIRE test suite."""
 
 from __future__ import annotations
 

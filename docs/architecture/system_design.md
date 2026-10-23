@@ -1,4 +1,4 @@
-# ASSASSIN System Design Specification (multi-domain)
+# SAPPHIRE System Design Specification (multi-domain)
 
 **Document type:** architecture and contracts. Authoritative for domain taxonomy, PostgreSQL shape, and reconciliation equations.
 

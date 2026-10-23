@@ -218,7 +218,7 @@ def test_mutation_testing_qa(root_dir: Path) -> None:
 def main() -> int:
     root_dir = Path(__file__).resolve().parent.parent
     print("=" * 75)
-    print("🎯 ASSASSIN Product Manager & QA Acceptance Test")
+    print("🎯 SAPPHIRE Product Manager & QA Acceptance Test")
     print("   Feature: DevOps, QA Gates & Agent-to-Agent Review Foundation")
     print("=" * 75)
 

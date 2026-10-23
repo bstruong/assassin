@@ -1,6 +1,6 @@
-# ASSASSIN
+# SAPPHIRE
 
-**ASSASSIN** is a mathematically rigorous, fail-loud financial document extraction and reconciliation pipeline.
+**SAPPHIRE** is a mathematically rigorous, fail-loud financial document extraction and reconciliation pipeline.
 
 It enforces strict financial invariants, closed canonical schemas, and zero-PII egress to external models. Raw, ragged PDF statement data becomes balanced, integer-cents ledger records inside a single **Vault** deployable (Postgres + FastAPI + HTMX).
 

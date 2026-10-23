@@ -8,7 +8,7 @@ The Shape Up **betting table / in-bet / shipped / cool-down / raw** board lives 
 
 | Field | Value |
 |-------|--------|
-| **Project** | [ASSASSIN Shape Up](https://github.com/users/bstruong/projects/5) (`PVT_kwHOAujBHc4Bm78V`, #5) |
+| **Project** | [SAPPHIRE Shape Up](https://github.com/users/bstruong/projects/5) (`PVT_kwHOAujBHc4Bm78V`, #5) |
 | **Visibility** | **Private** (`public: false`) |
 | **Owner** | `@bstruong` (personal Projects) |
 | **Linked repo** | [bstruong/assassin](https://github.com/bstruong/assassin) |

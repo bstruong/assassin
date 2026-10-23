@@ -19,7 +19,7 @@
 
 ```mermaid
 flowchart LR
-  app[ASSASSIN_app_OTel] -->|OTLP| collector[OTel_Collector_k8s_or_compose]
+  app[SAPPHIRE_app_OTel] -->|OTLP| collector[OTel_Collector_k8s_or_compose]
   collector --> smoke[Smoke_assertion_or_QA]
 ```
 

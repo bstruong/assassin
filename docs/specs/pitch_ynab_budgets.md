@@ -6,7 +6,7 @@
 **Appetite:** Small Batch (2 weeks)  
 **Product north star:** YNAB-useful personal Vault — give assigned dollars a job  
 **Depends on:** Account overview home — shipped ([#50](https://github.com/bstruong/assassin/pull/50))  
-**Board:** Private GitHub Project **ASSASSIN Shape Up** (Lane=In-bet)
+**Board:** Private GitHub Project **SAPPHIRE Shape Up** (Lane=In-bet)
 
 ---
 
