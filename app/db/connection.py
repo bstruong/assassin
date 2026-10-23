@@ -14,7 +14,7 @@ from app.db.migrate import apply_migrations
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_DATABASE_URL = "postgresql://postgres:assassin@localhost:54329/assassin_test"
+DEFAULT_DATABASE_URL = "postgresql://postgres:sapphire@localhost:54329/sapphire_test"
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
 

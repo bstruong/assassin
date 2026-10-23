@@ -36,7 +36,7 @@ def main() -> int:
     postgres_url = (
         os.environ.get("TEST_DATABASE_URL")
         or os.environ.get("DATABASE_URL")
-        or "postgresql://postgres:assassin@localhost:54329/assassin_test"
+        or "postgresql://postgres:sapphire@localhost:54329/sapphire_test"
     )
     tmp_path = Path("/tmp/qa_step10")
     tmp_path.mkdir(exist_ok=True)

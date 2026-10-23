@@ -1,4 +1,4 @@
--- Canonical PostgreSQL Schema Definitions for ASSASSIN
+-- Canonical PostgreSQL Schema Definitions for SAPPHIRE
 -- All monetary values are integer cents (BIGINT). No floating-point arithmetic.
 -- All raw pages, tokens, and payloads are append-only.
 

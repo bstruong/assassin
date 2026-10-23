@@ -38,8 +38,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: assassin
-          POSTGRES_DB: assassin_test
+          POSTGRES_PASSWORD: sapphire
+          POSTGRES_DB: sapphire_test
         ports:
         - 54329:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
@@ -59,7 +59,7 @@ jobs:
       run: uv sync
     - name: Initialize Test Database Schema
       env:
-        DATABASE_URL: postgresql://postgres:assassin@localhost:54329/assassin_test
+        DATABASE_URL: postgresql://postgres:sapphire@localhost:54329/sapphire_test
       run: uv run python -c "from app.db.connection import init_db; init_db()"
     - name: Install Playwright browsers
       run: uv run playwright install --with-deps

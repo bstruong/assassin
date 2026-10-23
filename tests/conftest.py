@@ -46,6 +46,8 @@ def postgres_url() -> str:
     candidate_urls = [
         os.environ.get("TEST_DATABASE_URL"),
         os.environ.get("DATABASE_URL"),
+        "postgresql://postgres:sapphire@localhost:54329/sapphire_test",
+        "postgresql://postgres:postgres@localhost:5432/sapphire_test",
         "postgresql://postgres:assassin@localhost:54329/assassin_test",
         "postgresql://postgres:postgres@localhost:5432/assassin_test",
     ]
@@ -67,11 +69,11 @@ def postgres_url() -> str:
                     "docker",
                     "run",
                     "--name",
-                    "assassin-test-db",
+                    "sapphire-test-db",
                     "-e",
-                    "POSTGRES_PASSWORD=assassin",
+                    "POSTGRES_PASSWORD=sapphire",
                     "-e",
-                    "POSTGRES_DB=assassin_test",
+                    "POSTGRES_DB=sapphire_test",
                     "-p",
                     "54329:5432",
                     "-d",
@@ -82,7 +84,7 @@ def postgres_url() -> str:
             )
             # wait up to 10 seconds for container readiness
             container_url = (
-                "postgresql://postgres:assassin@localhost:54329/assassin_test"
+                "postgresql://postgres:sapphire@localhost:54329/sapphire_test"
             )
             for _ in range(20):
                 time.sleep(0.5)

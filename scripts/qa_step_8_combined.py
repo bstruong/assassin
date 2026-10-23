@@ -247,7 +247,7 @@ def main() -> int:
         print_step("Scenario 6: Multi-Account PostgreSQL Persistence")
         postgres_url = os.environ.get(
             "TEST_DATABASE_URL",
-            "postgresql://postgres:assassin@localhost:54329/assassin_test",
+            "postgresql://postgres:sapphire@localhost:54329/sapphire_test",
         )
         try:
             init_db(url=postgres_url)
